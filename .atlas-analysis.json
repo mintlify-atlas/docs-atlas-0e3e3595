@@ -1,0 +1,113 @@
+{
+  "projectType": "saas",
+  "projectName": "CashCat",
+  "projectDescription": "A modern zero-based budgeting app for taking control of your finances with intentional spending.",
+  "theme": "almond",
+  "primaryColor": "#10b981",
+  "lightColor": "#34d399",
+  "darkColor": "#059669",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/zero-based-budgeting",
+              "concepts/accounts",
+              "concepts/categories-and-groups",
+              "concepts/transactions",
+              "concepts/budget-rollover"
+            ]
+          },
+          {
+            "group": "Features",
+            "pages": [
+              "features/budget-management",
+              "features/statistics",
+              "features/mobile-apps",
+              "features/offline-mode",
+              "features/pro-subscription"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/first-budget",
+              "guides/best-practices",
+              "guides/troubleshooting"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api/overview",
+              "api/authentication",
+              "api/errors"
+            ]
+          },
+          {
+            "group": "Endpoints",
+            "pages": [
+              "api/accounts",
+              "api/categories",
+              "api/groups",
+              "api/transactions",
+              "api/transfers",
+              "api/assignments",
+              "api/budget-left"
+            ]
+          },
+          {
+            "group": "MCP Integration",
+            "pages": [
+              "api/mcp/overview",
+              "api/mcp/tools",
+              "api/mcp/examples"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Zero-based budgeting methodology",
+    "Multi-account management with real-time balances",
+    "Category and group organization for budget planning",
+    "Transaction tracking with automatic budget updates",
+    "Budget rollover for unspent funds",
+    "Visual statistics and spending insights",
+    "Cross-platform support (Web, iOS, Android)",
+    "Offline-first architecture with sync",
+    "RESTful API with authentication",
+    "MCP integration for AI financial advisors",
+    "Pro subscription with advanced features"
+  ],
+  "publicApiSurface": [
+    "GET /api/v1/accounts",
+    "GET /api/v1/categories",
+    "GET /api/v1/groups",
+    "GET /api/v1/transactions",
+    "GET /api/v1/transfers",
+    "GET /api/v1/assignments",
+    "GET /api/v1/categories/budget-left",
+    "POST /api/mcp (MCP JSON-RPC endpoint)",
+    "MCP Tool: cashcat_get",
+    "MCP Tool: cashcat_financial_overview",
+    "MCP Tool: cashcat_full_context"
+  ]
+}
