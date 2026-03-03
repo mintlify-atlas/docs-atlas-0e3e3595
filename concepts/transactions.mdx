@@ -1,0 +1,184 @@
+---
+title: Transactions
+description: Understanding transaction types and how they affect your budget and account balances
+---
+
+Transactions represent money moving in and out of your accounts. Every transaction has a type that determines how it affects your budget and balances.
+
+## Transaction types
+
+CashCat supports three transaction types:
+
+### Payment
+
+Payments are spending transactions that draw from your budget categories. When you buy groceries, pay a bill, or make any purchase, you record a payment.
+
+**Payment transactions must include:**
+
+- `amount` — The amount spent (positive number)
+- `category_id` — Which budget category to spend from
+- `account_id` — Which account the money came from
+- `date` — When the transaction occurred
+
+```json
+{
+  "type": "payment",
+  "amount": 47.23,
+  "category_id": "groceries-category-id",
+  "account_id": "checking-account-id",
+  "date": "2024-03-15",
+  "vendor": "Whole Foods",
+  "description": "Weekly groceries"
+}
+```
+
+<Info>
+Payments decrease both your account balance and your category budget.
+</Info>
+
+### Income
+
+Income transactions add money to your accounts. This could be your paycheck, freelance payment, gift money, or any other funds coming in.
+
+**Income transactions include:**
+
+- `amount` — The amount received (positive number)
+- `account_id` — Which account receives the money
+- `date` — When the income arrived
+- `category_id` — Optional, usually not needed
+
+```json
+{
+  "type": "income",
+  "amount": 3000.00,
+  "account_id": "checking-account-id",
+  "date": "2024-03-01",
+  "vendor": "Payroll",
+  "description": "March salary"
+}
+```
+
+<Tip>
+After recording income, create assignments to distribute that money across your budget categories. This is how you implement zero-based budgeting.
+</Tip>
+
+### Starting balance
+
+Starting transactions set the initial balance when you first add an account to CashCat. They don't affect your budget categories—they simply establish where your accounts begin.
+
+```json
+{
+  "type": "starting",
+  "amount": 1234.56,
+  "account_id": "checking-account-id",
+  "date": "2024-01-01",
+  "description": "Initial balance"
+}
+```
+
+<Note>
+Starting transactions don't require a `category_id` and aren't counted as income in your budget.
+</Note>
+
+## How transactions affect your budget
+
+The type of transaction determines its impact:
+
+| Type | Account Balance | Category Budget |
+|------|-----------------|------------------|
+| Payment | Decreases | Decreases |
+| Income | Increases | No direct effect* |
+| Starting | Sets initial balance | Not affected |
+
+*Income doesn't automatically increase category budgets. You assign income to categories separately using assignments.
+
+## Transaction details
+
+Every transaction can include:
+
+**Required fields:**
+- `amount` — Monetary value (always positive)
+- `date` — Transaction date in YYYY-MM-DD format
+- `type` — One of: payment, income, or starting
+
+**Optional fields:**
+- `account_id` — Which account (uses default if not specified)
+- `category_id` — Which budget category (required for payments)
+- `vendor` — Where the transaction occurred
+- `vendor_id` — Link to a vendor record
+- `description` — Additional notes
+
+<Info>
+If you don't specify an `account_id`, CashCat uses your default account. If you don't have a default account set, it uses your first account.
+</Info>
+
+## Vendors
+
+Vendors help you track where you spend money. You can reference vendors by:
+
+- **Name** — Simple text string in the `vendor` field
+- **ID** — Reference to a vendor record using `vendor_id`
+
+Linking to vendor records helps with:
+
+- Consistent naming across transactions
+- Filtering and reporting by vendor
+- Auto-categorization in future transactions
+
+## Filtering and searching
+
+The Transactions API provides powerful filtering:
+
+**By time:**
+- `month=2024-03` — All transactions in March 2024
+- `start_date` and `end_date` — Custom date range
+
+**By category or account:**
+- `category_id` — Transactions for a specific category
+- `account_id` — Transactions in a specific account
+
+**By amount:**
+- `amount_min` and `amount_max` — Amount range filters
+
+**By vendor:**
+- `vendor_id` — Transactions with a specific vendor
+- `vendor` — Search vendor names (partial match)
+
+**By description:**
+- `description_contains` — Search transaction descriptions
+
+<Tip>
+Use the `include` parameter to get related data: `include=account,category,vendor` returns full objects instead of just IDs.
+</Tip>
+
+## Editing past transactions
+
+One of CashCat's strengths is flexibility. You can edit past transactions, and the system automatically recalculates:
+
+- Account balances
+- Category spending
+- Rollover amounts for future months
+
+This "auto-cascade" feature means you never have to manually fix downstream calculations when you correct an old transaction.
+
+<Note>
+Balance calculations are performed on-demand when you request them, ensuring they're always accurate even after editing historical data.
+</Note>
+
+## Idempotency
+
+When creating transactions via the API, you can use an `Idempotency-Key` header to prevent duplicate transactions. If you retry a request with the same key, CashCat returns the original transaction instead of creating a duplicate.
+
+```bash
+curl -X POST https://api.cashcat.app/v1/transactions \
+  -H "Authorization: Bearer cc_live_..." \
+  -H "Idempotency-Key: unique-request-id" \
+  -H "Content-Type: application/json" \
+  -d '{"type": "payment", "amount": 50, ...}'
+```
+
+This is useful for:
+
+- Mobile apps that might retry on network issues
+- Integrations that process webhooks
+- Automated transaction imports

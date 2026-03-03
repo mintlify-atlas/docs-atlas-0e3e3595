@@ -1,0 +1,244 @@
+---
+title: Offline mode
+description: Offline-first architecture with automatic sync, local caching, and network status indicator
+---
+
+CashCat is built with an offline-first architecture, allowing you to manage your budget even without an internet connection. All data syncs automatically when you reconnect.
+
+## How offline mode works
+
+CashCat uses TanStack Query for intelligent data caching and synchronization:
+
+1. **On app launch** — all data fetches from Supabase and caches locally
+2. **While online** — reads from cache, updates in background
+3. **When offline** — reads from cache, queues writes
+4. **On reconnect** — syncs queued changes to server
+
+<Info>
+The cache persists to IndexedDB using `idb-keyval`, so your data survives app restarts and browser refreshes.
+</Info>
+
+## Offline badge
+
+The offline badge appears when network connectivity is lost:
+
+```tsx
+<div className="fixed bottom-20 right-4 z-[100] 
+  px-3 py-1.5 rounded-full text-xs font-medium shadow-lg
+  bg-amber-500/20 text-amber-300 border border-amber-500/30 
+  backdrop-blur-md">
+  Offline
+</div>
+```
+
+### Badge behavior
+
+- **Position**: Fixed to bottom-right (above navigation)
+- **Appearance**: Amber/yellow color for offline state
+- **Transition**: Fades in when offline, fades out when online
+- **Z-index**: `100` to appear above other UI elements
+
+<Note>
+The badge shows "Online" briefly in green when connectivity is restored, then fades out after 300ms.
+</Note>
+
+## Network detection
+
+CashCat uses the Capacitor Network plugin for network status:
+
+```tsx
+import { Network } from '@capacitor/network';
+
+const status = await Network.getStatus();
+const isOffline = !status.connected;
+
+Network.addListener('networkStatusChange', (status) => {
+  const offline = !status.connected;
+  // Update UI accordingly
+});
+```
+
+### Detection methods
+
+1. **Capacitor plugin** (mobile apps) — native network monitoring
+2. **Browser API fallback** (web) — `window.online` and `window.offline` events
+
+Both methods work together to ensure accurate status across platforms.
+
+## Data caching strategy
+
+CashCat caches all essential data using TanStack Query:
+
+### Cached resources
+
+- **Transactions** — all income and spending records
+- **Categories** — budget categories with goals and settings
+- **Groups** — category organization
+- **Assignments** — monthly budget allocations
+- **Accounts** — bank accounts and balances
+- **Vendors** — merchant names for autocomplete
+- **Transfers** — money moved between accounts
+
+### Cache configuration
+
+```typescript
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
+import { set, get, del } from 'idb-keyval';
+
+const persister = createAsyncStoragePersister({
+  storage: {
+    getItem: (key) => get(key),
+    setItem: (key, value) => set(key, value),
+    removeItem: (key) => del(key),
+  },
+});
+```
+
+<Tip>
+Query persistence uses IndexedDB, which has much higher storage limits than localStorage (typically 50MB+ vs 5MB).
+</Tip>
+
+## Sync behavior
+
+The `SyncInitializer` component handles automatic synchronization:
+
+```tsx
+export function SyncInitializer() {
+  const { syncAll } = useSyncAll();
+  const mounted = useRef(false);
+
+  useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      const timer = setTimeout(() => {
+        syncAll();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [syncAll]);
+
+  return null;
+}
+```
+
+### Sync triggers
+
+- **App launch** — syncs after 1 second delay
+- **Network reconnect** — automatic sync when online
+- **Manual refresh** — user-initiated sync
+- **Background sync** — periodic updates while app is active
+
+The 1-second delay prevents sync from blocking initial render.
+
+## Query invalidation
+
+CashCat invalidates queries intelligently to keep data fresh:
+
+### After mutations
+
+When you create, update, or delete data:
+
+```typescript
+queryClient.invalidateQueries({ 
+  queryKey: ['transactions', userId] 
+});
+queryClient.invalidateQueries({ 
+  queryKey: ['categories', userId] 
+});
+```
+
+### Affected queries
+
+Depending on the action:
+
+- **Add transaction** → invalidates transactions, assignments
+- **Update category** → invalidates categories, groups
+- **Delete account** → invalidates accounts, transactions
+- **Change budget** → invalidates assignments, categories
+
+This ensures UI updates immediately after changes.
+
+## Offline limitations
+
+Some features require connectivity:
+
+<Warning>
+These features are unavailable offline:
+- Creating new accounts (requires Supabase RLS)
+- Uploading CSV imports (server-side processing)
+- Changing subscription settings (payment provider API)
+- Fetching new chart data (requires aggregate queries)
+</Warning>
+
+### Queued mutations
+
+Mutations made offline are currently **not queued**. Support for offline mutation queues is planned:
+
+- Transactions will queue locally
+- Sync when connection restored
+- Conflict resolution for concurrent edits
+- Optimistic UI updates
+
+## Storage persistence
+
+Cached data persists across sessions:
+
+### IndexedDB storage
+
+- **Database name**: TanStack Query uses default IDB database
+- **Store name**: `keyval` (from idb-keyval)
+- **Data format**: Serialized query cache
+- **Expiration**: Queries expire based on `staleTime` config
+
+### Cache lifetime
+
+Different data types have different staleness times:
+
+- **Transactions**: 5 minutes
+- **Categories**: 10 minutes
+- **Settings**: 30 minutes
+- **Static data**: 1 hour
+
+Stale data refetches automatically when you navigate to it while online.
+
+## Progressive enhancement
+
+CashCat works progressively:
+
+1. **No cache** — fetches all data from server (first visit)
+2. **Cached, online** — reads cache, updates in background
+3. **Cached, offline** — reads cache only, shows offline badge
+4. **Cached, stale** — shows cached data, fetches updates when online
+
+This ensures the app is always usable, even with poor connectivity.
+
+## Cache debugging
+
+TanStack Query DevTools help debug cache:
+
+```tsx
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
+<ReactQueryDevtools initialIsOpen={false} />
+```
+
+DevTools show:
+
+- **Query status** — loading, success, error, stale
+- **Cache entries** — all cached data
+- **Mutations** — in-flight and completed
+- **Network activity** — fetch and update timeline
+
+<Note>
+DevTools are only available in development mode and do not appear in production builds.
+</Note>
+
+## Future enhancements
+
+Planned offline improvements:
+
+- **Offline mutation queue** — queue changes when offline, sync when online
+- **Conflict resolution** — handle concurrent edits from multiple devices
+- **Partial sync** — sync only changed data, not full refetch
+- **Background sync** — use Service Worker for sync even when app closed
+- **Optimistic updates** — instant UI updates before server confirms

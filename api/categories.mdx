@@ -1,0 +1,192 @@
+---
+title: Get categories
+description: Retrieve a list of budget categories with optional filtering and sorting
+---
+
+## Endpoint
+
+```
+GET /api/v1/categories
+```
+
+Retrieve all budget categories for the authenticated user with support for filtering by group, goal type, and other attributes.
+
+## Query parameters
+
+<ParamField query="q" type="string">
+  Search categories by name using case-insensitive pattern matching
+</ParamField>
+
+<ParamField query="group_id" type="string">
+  Filter categories by group UUID
+</ParamField>
+
+<ParamField query="ids" type="string">
+  Comma-separated list of category UUIDs to filter by
+</ParamField>
+
+<ParamField query="goal_type" type="string">
+  Filter by goal type. Options: `spending`, `savings`, `emergency_fund`
+</ParamField>
+
+<ParamField query="rollover_enabled" type="boolean" default="false">
+  Filter by rollover enabled status. Accepts `true`, `false`, `1`, or `0`
+</ParamField>
+
+<ParamField query="has_goal" type="boolean" default="true">
+  Filter categories that have a goal set (goal > 0). Accepts `true`, `false`, `1`, or `0`
+</ParamField>
+
+<ParamField query="include_group" type="boolean" default="false">
+  Include group name in response. Accepts `true`, `false`, `1`, or `0`
+</ParamField>
+
+<ParamField query="fields" type="string">
+  Comma-separated list of fields to return. Available fields: `id`, `name`, `group`, `goal`, `goal_type`, `rollover_enabled`, `timeframe`, `created_at`, `group_name`
+</ParamField>
+
+<ParamField query="sort" type="string" default="name">
+  Field to sort by. Options: `name`, `goal`, `created_at`, `goal_type`
+</ParamField>
+
+<ParamField query="order" type="string" default="asc">
+  Sort order. Options: `asc`, `desc`
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Maximum number of results to return (1-1000)
+</ParamField>
+
+<ParamField query="offset" type="integer" default="0">
+  Number of results to skip for pagination
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  Cursor for pagination. Cannot be used with `offset`
+</ParamField>
+
+## Response fields
+
+<ResponseField name="data" type="array">
+  Array of category objects
+
+  <ResponseField name="id" type="string">
+    Unique category identifier (UUID)
+  </ResponseField>
+
+  <ResponseField name="name" type="string">
+    Category name
+  </ResponseField>
+
+  <ResponseField name="group" type="string">
+    Group UUID this category belongs to
+  </ResponseField>
+
+  <ResponseField name="goal" type="number | null">
+    Monthly budget goal amount
+  </ResponseField>
+
+  <ResponseField name="goal_type" type="string">
+    Type of goal: `spending`, `savings`, or `emergency_fund`
+  </ResponseField>
+
+  <ResponseField name="rollover_enabled" type="boolean">
+    Whether unused budget rolls over to next month
+  </ResponseField>
+
+  <ResponseField name="timeframe" type="string | null">
+    Goal timeframe
+  </ResponseField>
+
+  <ResponseField name="created_at" type="string">
+    Category creation timestamp (ISO 8601)
+  </ResponseField>
+
+  <ResponseField name="group_name" type="string | null">
+    Name of the group (only included when `include_group=true`)
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Pagination and metadata
+
+  <ResponseField name="total" type="integer">
+    Total number of matching categories
+  </ResponseField>
+
+  <ResponseField name="returned" type="integer">
+    Number of categories returned in this response
+  </ResponseField>
+
+  <ResponseField name="limit" type="integer">
+    Maximum results per page
+  </ResponseField>
+
+  <ResponseField name="offset" type="integer">
+    Current offset
+  </ResponseField>
+
+  <ResponseField name="next_cursor" type="string | null">
+    Cursor for the next page, or null if no more results
+  </ResponseField>
+
+  <ResponseField name="sort" type="string">
+    Field used for sorting
+  </ResponseField>
+
+  <ResponseField name="order" type="string">
+    Sort order applied
+  </ResponseField>
+
+  <ResponseField name="include_group" type="boolean">
+    Whether group names were included
+  </ResponseField>
+</ResponseField>
+
+## Example request
+
+```bash
+curl -X GET "https://api.cashcat.app/api/v1/categories?goal_type=spending&include_group=true&sort=goal&order=desc" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Example response
+
+```json
+{
+  "data": [
+    {
+      "id": "c1d2e3f4-a5b6-7890-cdef-123456789012",
+      "name": "Groceries",
+      "group": "g1h2i3j4-k5l6-7890-ghij-234567890123",
+      "goal": 600.00,
+      "goal_type": "spending",
+      "rollover_enabled": true,
+      "timeframe": "monthly",
+      "created_at": "2024-01-01T12:00:00Z",
+      "group_name": "Essential Expenses"
+    },
+    {
+      "id": "d2e3f4a5-b6c7-8901-defg-234567890123",
+      "name": "Dining Out",
+      "group": "g1h2i3j4-k5l6-7890-ghij-234567890123",
+      "goal": 200.00,
+      "goal_type": "spending",
+      "rollover_enabled": false,
+      "timeframe": "monthly",
+      "created_at": "2024-01-02T10:00:00Z",
+      "group_name": "Essential Expenses"
+    }
+  ],
+  "meta": {
+    "total": 2,
+    "returned": 2,
+    "limit": 100,
+    "offset": 0,
+    "next_cursor": null,
+    "sort": "goal",
+    "order": "desc",
+    "include_group": true
+  }
+}
+```

@@ -1,0 +1,100 @@
+---
+title: Accounts
+description: Understanding bank accounts, account types, balances, and how CashCat tracks your money
+---
+
+Accounts in CashCat represent your real-world bank accounts, credit cards, and cash holdings. They track where your money physically exists, separate from what you've budgeted it for.
+
+## Account basics
+
+Each account has the following properties:
+
+- **Name** — A descriptive label like "Chase Checking" or "Emergency Savings"
+- **Type** — The kind of account (e.g., "checking", "savings", "credit")
+- **Balance** — Calculated automatically from transaction history
+- **Status** — Active or inactive accounts
+
+<Info>
+Account balances are computed from all transactions and transfers, not manually entered. This ensures they stay accurate as you add or edit transactions.
+</Info>
+
+## Account types
+
+When creating an account, you specify a type that describes what kind of account it is. Common types include:
+
+- `checking` — Primary spending accounts
+- `savings` — Savings and emergency fund accounts
+- `credit` — Credit cards
+- `cash` — Physical cash on hand
+- Custom types as needed
+
+<Note>
+Account types are text fields, so you can use any label that makes sense for your situation.
+</Note>
+
+## The default account
+
+One account can be marked as the default using the `is_default` flag. This account is automatically selected when creating transactions without specifying an account.
+
+<Tip>
+Set your primary checking account as the default to streamline transaction entry.
+</Tip>
+
+If you create a transaction without specifying an `account_id`, CashCat will:
+
+1. Use the account marked with `is_default: true`
+2. If no default exists, use the first available account
+3. Return an error if you have no accounts
+
+## Account balances
+
+Balances are calculated by summing:
+
+- **Transactions** — All income, payment, and starting balance transactions
+- **Transfers in** — Money transferred into the account from other accounts
+- **Transfers out** — Money transferred out to other accounts
+
+The balance calculation runs up to a specific date, so you can see historical balances using the `as_of_date` parameter.
+
+<Info>
+To include balance information in API responses, use `include_balance=true` and optionally specify an `as_of_date` in YYYY-MM-DD format.
+</Info>
+
+## Active vs inactive accounts
+
+The `is_active` flag lets you mark accounts as inactive without deleting them. Inactive accounts:
+
+- Preserve historical transaction data
+- Don't appear in normal account lists (unless filtered)
+- Can't be used for new transactions
+
+This is useful for closed accounts or accounts you no longer use but want to maintain for record-keeping.
+
+## Starting balances
+
+When you first add an account to CashCat, you'll want to record its current balance. Use a transaction with `type: "starting"` to set the initial balance:
+
+```json
+{
+  "type": "starting",
+  "amount": 1234.56,
+  "date": "2024-01-01",
+  "account_id": "your-account-id"
+}
+```
+
+<Note>
+Starting balance transactions don't require a category and don't affect your budget assignments.
+</Note>
+
+## Transfers between accounts
+
+Money moving between your accounts is tracked as transfers, not transactions. This keeps account balances accurate without double-counting funds in your budget.
+
+For example, moving money from checking to savings:
+
+- Decreases the checking account balance
+- Increases the savings account balance
+- Does not affect category budgets
+
+See the Transfers documentation for more details on how inter-account transfers work.

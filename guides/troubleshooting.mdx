@@ -1,0 +1,310 @@
+---
+title: Troubleshooting common issues
+description: Solutions to frequently asked questions and common problems you might encounter while using CashCat
+---
+
+Run into a problem? This guide covers the most common issues and how to solve them.
+
+## Onboarding and setup
+
+<Accordion title="I closed the onboarding wizard by accident. How do I get back to it?">
+  If you closed the budget wizard before completing setup, don't worry. The wizard won't automatically reappear, but you can access the same functionality:
+
+  1. Click the settings gear icon in your budget page
+  2. Select "Manage Budget" to add or edit categories
+  3. Select "Manage Accounts" to add accounts
+
+  Your onboarding status is saved via the `is_onboarded` flag in your settings. Once you've created at least one category, you're considered onboarded and the welcome screen won't show again.
+</Accordion>
+
+<Accordion title="I'm stuck in the onboarding flow and can't get out">
+  This shouldn't happen with the current system. The onboarding flow has two steps:
+
+  1. **Budget wizard** - Create your first categories
+  2. **Spotlight tour** - Quick tour of the interface
+
+  If you're experiencing issues:
+  
+  - Complete the wizard by adding at least one category and closing the modal
+  - The spotlight tour will start automatically—follow it to completion or skip it
+  - Your `is_onboarded` flag will be set to `true` and the flow won't repeat
+
+  If the problem persists, please report it on [GitHub Issues](https://github.com/cashcat/cashcat/issues) with details about what you're seeing.
+</Accordion>
+
+<Accordion title="The welcome screen shows even though I already have categories">
+  The welcome screen ("Welcome to CashCat" overlay) appears when `categories.length === 0`. If you're seeing it despite having categories:
+
+  1. Refresh the page to ensure your categories loaded properly
+  2. Check your browser console for any errors
+  3. Verify you're logged into the correct account
+
+  If you deleted all your categories, the overlay will reappear. However, the onboarding flow itself won't restart because your `is_onboarded` flag remains `true`.
+</Accordion>
+
+<Accordion title="How do I reset my account and start the onboarding again?">
+  To completely reset and redo onboarding:
+
+  1. Delete all your categories from the "Manage Budget" modal
+  2. Contact support to reset your `is_onboarded` flag (or delete and recreate your account)
+
+  <Note>
+  There's currently no self-service reset option. This is intentional to prevent accidental data loss.
+  </Note>
+</Accordion>
+
+## Categories and budget
+
+<Accordion title="My category balance is negative. What does that mean?">
+  A negative category balance means you've spent more than your monthly goal for that category. This isn't inherently bad—it's just feedback.
+
+  **What to do:**
+  1. Check if the overspending was intentional (unexpected expense, etc.)
+  2. Move money from another category if needed
+  3. Consider increasing that category's monthly goal for next month
+  4. Review transactions to ensure they're in the correct category
+
+  <Tip>
+  Red numbers are information, not judgment. Use them to make informed decisions.
+  </Tip>
+</Accordion>
+
+<Accordion title="I can't edit or delete a category">
+  If you're unable to edit or delete a category:
+
+  1. Make sure you're in the "Manage Budget" modal (click the settings gear)
+  2. Categories with existing transactions can usually be edited but not always deleted
+  3. Try refreshing the page and attempting again
+
+  If the issue persists, check your browser console for errors and report them on GitHub.
+</Accordion>
+
+<Accordion title="How do I handle income in CashCat?">
+  Income isn't a category—it's what you assign TO categories. When you receive income:
+
+  1. Record it as an inflow transaction
+  2. Your "to be assigned" balance increases by that amount
+  3. Distribute the income across your budget categories until "to be assigned" reaches zero
+
+  This is the core of zero-based budgeting: every dollar gets assigned to a category.
+</Accordion>
+
+<Accordion title="Can I budget for expenses that span multiple months?">
+  Yes! This is where the "money you don't spend rolls forward" principle shines.
+
+  **For annual expenses:**
+  - Create a category like "Car Insurance (due March)"
+  - Set monthly goal to annual cost ÷ 12
+  - Money accumulates each month until the bill arrives
+
+  **For irregular expenses:**
+  - Create a category like "Medical/Dental"
+  - Budget an average amount monthly
+  - Unspent amounts carry forward for when you need them
+
+  <Note>
+  Automatic rollover is on the roadmap. For now, you can manually see your unspent amounts and they persist across months.
+  </Note>
+</Accordion>
+
+<Accordion title="What's the difference between a category goal and the actual balance?">
+  - **Monthly goal** - How much you plan to spend/save in this category
+  - **Actual balance** - Goal minus spent transactions
+
+  Example:
+  - Goal: $400 for groceries
+  - Spent: $275
+  - Balance: $125 remaining
+
+  The goal is your budget; the balance is what's left after spending.
+</Accordion>
+
+## Accounts and transactions
+
+<Accordion title="I added a transaction to the wrong category. How do I fix it?">
+  CashCat is built for flexibility. To edit a transaction:
+
+  1. Find the transaction in your transaction list
+  2. Click to open the edit dialog
+  3. Change the category, amount, or description
+  4. Save changes
+
+  Your budget will auto-cascade and recalculate all affected category balances immediately.
+
+  <Tip>
+  You can edit past transactions anytime without breaking your budget. CashCat recalculates everything automatically.
+  </Tip>
+</Accordion>
+
+<Accordion title="My account balance doesn't match my bank. What should I do?">
+  Discrepancies between CashCat and your bank usually mean:
+
+  1. **Forgotten transactions** - Review your bank statement for missing entries
+  2. **Pending transactions** - Check if your bank includes pending charges
+  3. **Incorrect amounts** - Double-check transaction amounts for typos
+  4. **Wrong account** - Verify you logged transactions to the correct account
+
+  **To reconcile:**
+  1. Open your bank statement
+  2. Go through each transaction and verify it's in CashCat
+  3. Add any missing transactions
+  4. Correct any errors
+
+  <Note>
+  Regular reconciliation (weekly) prevents small errors from compounding into large discrepancies.
+  </Note>
+</Accordion>
+
+<Accordion title="Can I delete an account?">
+  You can delete accounts from the "Manage Accounts" modal, but:
+
+  - Accounts with existing transactions may need those transactions reassigned first
+  - Deleting an account doesn't delete its transactions
+
+  If you're unable to delete an account, check for associated transactions and move them to another account first.
+</Accordion>
+
+<Accordion title="Do I need to add accounts, or can I just use categories?">
+  Accounts are optional but recommended. Here's why:
+
+  - **Categories** tell you what money is FOR (groceries, rent, etc.)
+  - **Accounts** tell you WHERE money is (checking, savings, cash, etc.)
+
+  You can use CashCat with just categories, but tracking accounts helps you:
+  1. Reconcile with bank statements
+  2. Know which account to pay from
+  3. Track savings separately from spending money
+
+  <Tip>
+  Think of accounts as secondary. Focus your energy on categories—they're what truly matter in zero-based budgeting.
+  </Tip>
+</Accordion>
+
+<Accordion title="Can CashCat automatically import transactions from my bank?">
+  Not yet. CashCat currently requires manual transaction entry.
+
+  **On the roadmap:**
+  - Transaction imports via CSV
+  - Bank integration via OpenBanking
+
+  Manual entry has benefits:
+  - You're more aware of spending
+  - You control what's tracked
+  - No security concerns with bank connections
+
+  Join the [Discord community](https://discord.gg/C9mYnEdAQA) to follow development updates.
+</Accordion>
+
+## Performance and data
+
+<Accordion title="The app is loading slowly">
+  If CashCat feels slow:
+
+  1. **Check your internet connection** - CashCat requires a stable connection to load data
+  2. **Clear browser cache** - Old cached data can sometimes cause issues
+  3. **Try a different browser** - Rule out browser-specific problems
+  4. **Check browser console** - Look for JavaScript errors or failed requests
+
+  If problems persist after trying these steps, report the issue on GitHub with:
+  - Your browser and version
+  - Approximate number of transactions/categories
+  - Any console errors
+</Accordion>
+
+<Accordion title="Can I export my data?">
+  Data export features are in development. For now, your data lives in your Supabase database.
+
+  **What's on the roadmap:**
+  - CSV export of transactions
+  - Full data export in JSON format
+  - Detailed statistics and reports
+
+  CashCat is open source (AGPL 3.0), so you always have full access to your data through the database.
+</Accordion>
+
+<Accordion title="Is my financial data secure?">
+  Yes. CashCat is built with security in mind:
+
+  - All data is stored in Supabase with row-level security
+  - User authentication via secure session tokens
+  - No third-party tracking or analytics
+  - No ads or data selling
+  - Open source codebase (you can audit it yourself)
+
+  Your financial data belongs to you. CashCat gives you full control with no hidden agenda.
+</Accordion>
+
+<Accordion title="What happens if I delete a transaction?">
+  Deleting a transaction:
+
+  1. Removes it from your transaction list
+  2. Recalculates affected category balances
+  3. Updates account balances
+  4. Cannot be undone (no trash/undo feature yet)
+
+  <Tip>
+  Double-check before deleting transactions. If you're unsure, edit it instead of deleting—you can always change it back.
+  </Tip>
+</Accordion>
+
+## Features and limitations
+
+<Accordion title="Can I share my budget with a partner or family member?">
+  Multi-user collaboration isn't currently available but is a frequently requested feature.
+
+  **Current workaround:**
+  - Share login credentials (not ideal for security)
+  - Each person maintains their own budget
+
+  **What's needed:**
+  - User permission system
+  - Shared budget spaces
+  - Activity logging
+
+  Join the [Discord](https://discord.gg/C9mYnEdAQA) to discuss multi-user features and follow development.
+</Accordion>
+
+<Accordion title="Can I budget in a currency other than USD?">
+  CashCat should work with any currency, though the display formatting may default to USD.
+
+  If you encounter currency-specific issues:
+  1. Report them on GitHub Issues
+  2. Include your currency and locale
+  3. Describe what's displaying incorrectly
+
+  International currency support improvements are welcome contributions!
+</Accordion>
+
+<Accordion title="Can I use CashCat on my phone?">
+  Yes! CashCat is a web app that works on any device with a browser. There's no dedicated mobile app, but the responsive design works on:
+
+  - iPhone/iPad (Safari, Chrome)
+  - Android phones/tablets (Chrome, Firefox)
+  - Any mobile browser
+
+  For the best mobile experience, add CashCat to your home screen ("Add to Home Screen" in Safari or Chrome).
+</Accordion>
+
+<Accordion title="Does CashCat have a monthly fee?">
+  No. CashCat is open source (AGPL 3.0) and free to use.
+
+  - No subscription fees
+  - No ads
+  - No upsells
+  - No premium tiers
+
+  You may have hosting costs if you self-host, but the hosted version at cashcat.app is free during early access.
+</Accordion>
+
+## Still need help?
+
+If you didn't find your answer here:
+
+1. **Join Discord** - [https://discord.gg/C9mYnEdAQA](https://discord.gg/C9mYnEdAQA) - Get help from the community
+2. **Report bugs** - [GitHub Issues](https://github.com/cashcat/cashcat/issues) - Technical problems and bugs
+3. **Request features** - GitHub Discussions or Issues - Suggest new functionality
+4. **Read the docs** - Check other documentation pages for detailed guides
+
+<Note>
+CashCat is in early access. Your feedback helps improve the product for everyone. Don't hesitate to reach out!
+</Note>

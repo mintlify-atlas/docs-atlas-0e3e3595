@@ -1,0 +1,148 @@
+---
+title: Categories and groups
+description: How categories and groups organize your budget and track spending
+---
+
+Categories are the foundation of your budget in CashCat. They represent specific purposes for your money, like "Groceries", "Rent", or "Emergency Fund". Groups help you organize related categories together.
+
+## Categories
+
+Each category represents a distinct area of your budget. You assign money to categories and track spending against them.
+
+### Category properties
+
+- **Name** — What the category is for (e.g., "Groceries", "Car Insurance")
+- **Group** — The group this category belongs to
+- **Goal** — Optional target amount for the category
+- **Goal type** — Whether this is for `spending`, `savings`, or an `emergency_fund`
+- **Rollover enabled** — Whether unspent funds carry forward to future months
+- **Timeframe** — When the goal applies (monthly, yearly, or once)
+
+<Info>
+Every category must belong to a group. Create groups first, then add categories to them.
+</Info>
+
+### Goal types
+
+Categories can have three goal types:
+
+**Spending**  
+Regular expenses that you budget for and spend from. Examples include groceries, utilities, and entertainment.
+
+**Savings**  
+Funds you're building up for future use. This could be vacation savings, a house down payment, or a new computer.
+
+**Emergency fund**  
+Your safety net for unexpected expenses. This type helps you distinguish between planned savings and emergency reserves.
+
+<Tip>
+Set realistic monthly goals for each category. If a category typically costs $300/month, set that as the goal to track whether you're staying on budget.
+</Tip>
+
+### Category timeframes
+
+The timeframe field defines when and how often your goal applies:
+
+```json
+{
+  "type": "monthly",
+  "start_date": "2024-01-01",
+  "end_date": null
+}
+```
+
+- `monthly` — Recurring goal every month
+- `yearly` — Annual goal
+- `once` — One-time goal with specific start and end dates
+
+This structure lets you model both recurring expenses (rent) and one-time goals (saving for a vacation).
+
+### Rollover
+
+The `rollover_enabled` flag controls whether unspent budget carries forward to future months. When enabled:
+
+- Unspent money automatically rolls into the next month
+- The category accumulates funds over time
+- You can budget less than your goal some months and catch up later
+
+<Note>
+Rollover is calculated automatically based on assignments and spending. You never need to manually move funds between months.
+</Note>
+
+## Groups
+
+Groups organize related categories together, making your budget easier to navigate and understand.
+
+### Common group examples
+
+- **Monthly Bills** — Rent, utilities, phone, internet
+- **Living Expenses** — Groceries, gas, household items
+- **Discretionary** — Entertainment, dining out, hobbies
+- **Savings Goals** — Emergency fund, vacation, new car
+- **Debt Payments** — Credit cards, loans
+
+<Info>
+Groups help you see totals across related categories. The API can return aggregated spending and assignments for each group.
+</Info>
+
+### Group properties
+
+Groups are simpler than categories:
+
+- **Name** — Descriptive label for the group
+- **Created date** — When the group was created
+
+That's it. Groups are organizational containers—the real budgeting happens at the category level.
+
+## How categories and groups work together
+
+Your budget structure looks like this:
+
+```
+Group: Monthly Bills
+├── Category: Rent
+├── Category: Electric
+└── Category: Internet
+
+Group: Living Expenses  
+├── Category: Groceries
+├── Category: Gas
+└── Category: Household Items
+```
+
+When you:
+
+1. **Assign money** — You create assignments for specific categories
+2. **Spend money** — Transactions are linked to categories
+3. **View your budget** — Categories roll up into group totals
+
+<Tip>
+Keep your category structure simple at first. You can always split categories later if you need more detail.
+</Tip>
+
+## Working with the API
+
+The Categories API lets you filter and query categories:
+
+- Search by name with `q`
+- Filter by group with `group_id`
+- Find categories with goals using `has_goal=true`
+- Filter by goal type
+- Include group names with `include_group=true`
+
+The Groups API can include budget totals for a specific month:
+
+```
+GET /api/v1/groups?include_budget_totals=true&month=2024-03
+```
+
+This returns each group with:
+
+- `month_assigned` — Total assigned to categories in this group
+- `month_spent` — Total spent from categories in this group  
+- `month_rollover` — Total rollover from previous months
+- `month_budget_left` — Remaining budget in the group
+
+<Note>
+Budget totals are computed on-demand and include rollover calculations, so they may take longer for groups with many categories or extensive transaction history.
+</Note>

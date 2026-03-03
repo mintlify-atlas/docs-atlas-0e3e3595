@@ -1,0 +1,117 @@
+---
+title: MCP integration overview
+description: Use the HTTP MCP endpoint to integrate AI agents with CashCat for financial analysis and advice.
+---
+
+CashCat includes a built-in Model Context Protocol (MCP) endpoint that enables AI agents to access your financial data through a standardized JSON-RPC interface.
+
+## Endpoint
+
+The MCP endpoint is available at:
+
+```
+https://<your-domain>/api/mcp
+```
+
+When deployed on Vercel, the endpoint is automatically available after deployment.
+
+## What is MCP?
+
+The Model Context Protocol is a JSON-RPC 2.0 based protocol that allows AI assistants and agents to access contextual data through standardized tools. CashCat's MCP implementation provides read-only access to your financial data.
+
+## Use cases
+
+- **Financial advice**: AI agents can analyze your spending patterns and provide personalized recommendations
+- **Budget analysis**: Get comprehensive insights into budget health, overspending, and cashflow
+- **Data exploration**: Query accounts, categories, transactions, and other financial data programmatically
+- **Multi-endpoint context**: Fetch broad financial context across multiple endpoints in a single call
+
+## Authentication
+
+All MCP tool calls require authentication using your CashCat API key in the `Authorization` header:
+
+```bash
+Authorization: Bearer cc_live_...
+```
+
+The MCP endpoint uses the same authentication flow as the REST API endpoints under `/api/v1/*`.
+
+<Note>
+Methods like `initialize`, `ping`, and `tools/list` do not require authentication. Only `tools/call` requires an API key.
+</Note>
+
+## JSON-RPC protocol
+
+All requests to the MCP endpoint must use JSON-RPC 2.0 format:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "method_name",
+  "params": {}
+}
+```
+
+Responses follow the JSON-RPC 2.0 format:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {}
+}
+```
+
+## Supported methods
+
+The MCP endpoint supports these JSON-RPC methods:
+
+- `initialize` - Initialize the MCP session and get server capabilities
+- `ping` - Health check endpoint
+- `tools/list` - Get the list of available tools
+- `tools/call` - Execute a specific tool (requires authentication)
+
+## Available tools
+
+CashCat provides three specialized tools for financial data access:
+
+### cashcat_get
+
+Generic read-only access to any CashCat REST GET endpoint. Supports:
+- `accounts`
+- `assignments`
+- `categories`
+- `categories/budget-left`
+- `groups`
+- `transactions`
+- `transfers`
+
+Includes support for pass-through query parameters and optional auto-pagination.
+
+### cashcat_financial_overview
+
+Advisory-focused financial summary for a specific month or date. Provides:
+- Net worth calculation
+- Budget totals and health metrics
+- Overspending highlights
+- Monthly cashflow analysis
+- Recent transaction and transfer activity
+
+### cashcat_full_context
+
+Comprehensive financial context bundle across all major endpoints. Fetches:
+- Accounts with balances
+- Categories and groups
+- Budget assignments and remaining budget
+- Transactions and transfers
+- Calculated totals and summaries
+
+Ideal for AI agents that need deep, structured context before providing financial advice.
+
+## Operational notes
+
+- The MCP endpoint is **read-only** by design
+- For large datasets, use `max_rows` or `max_rows_per_endpoint` to control payload size
+- Always rotate API keys if exposed in logs, screenshots, or shared conversations
+- Auto-pagination is available through `paginate_all` on the `cashcat_get` tool

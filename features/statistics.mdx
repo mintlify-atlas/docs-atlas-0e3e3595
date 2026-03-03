@@ -1,0 +1,169 @@
+---
+title: Statistics and charts
+description: Visual insights with interactive charts, spending analysis, and comparison tools
+---
+
+CashCat provides powerful visual statistics to help you understand your spending patterns and make better financial decisions. All charts are built with Chart.js and support interactive analysis.
+
+## Budget assignment chart
+
+The main chart visualizes your balance over time, showing how money flows in and out of categories.
+
+### Balance line chart
+
+Tracks your running balance across all transactions:
+
+- **Daily, weekly, or monthly** time periods (auto-selected based on date range)
+- **Smooth animations** with morphing transitions when zooming
+- **Interactive tooltips** showing date, balance, and transaction details
+- **Drag to select** date ranges for comparison analysis
+- **Click to zoom** into specific time periods
+
+<Info>
+The chart uses the Gabarito font family to match CashCat's design system.
+</Info>
+
+### Distance from goal visualization
+
+When you filter by specific categories or groups, the chart switches to show progress toward goals:
+
+- **Categories with goals** — visualizes distance from monthly target
+- **Categories without goals** — shows actual spending patterns
+- **Multi-category comparison** — overlay multiple categories to compare progress
+- **Color-coded datasets** — each category gets a distinct color for easy identification
+
+This view helps you understand whether you're on track to meet your category budgets.
+
+## Volume chart
+
+The volume bar chart shows daily transaction activity:
+
+- **Green bars** — income received
+- **Red bars** — spending
+- **Net balance** — calculated per day/week/month
+- **Segmented visualization** — bars split by category for detailed breakdown
+
+<Note>
+The volume chart only appears when no filters are active. Apply category or group filters to see the distance-from-goal chart instead.
+</Note>
+
+### Segment analysis
+
+Hover over volume chart bars to see detailed breakdowns:
+
+- **Affected categories** — which categories were involved
+- **Affected vendors** — where money was spent
+- **Income and spending totals** — separated amounts
+- **Net change** — overall impact on balance
+
+Segment details persist in a card below the chart until you close them, making it easy to reference while analyzing other data.
+
+## Comparison analysis
+
+The comparison tool appears above all charts and provides powerful analysis features.
+
+### Default comparison
+
+Automatically compares the entire visible date range:
+
+- **Start and end dates** — period being analyzed
+- **Total change** — overall balance movement
+- **Income vs spending** — breakdown of money in and out
+- **Average daily change** — trend indicator
+
+### Drag selection
+
+Click and drag across the line chart to select a custom date range:
+
+1. Click on the chart and drag to select dates
+2. Comparison data updates in real-time while dragging
+3. Release to lock in the selection
+4. Click "Clear Selection" to return to default view
+
+<Tip>
+Drag selection works on both desktop (mouse) and mobile (touch) devices.
+</Tip>
+
+### Hover analysis
+
+Hover over any point on the line chart to see single-day details:
+
+- **Specific date** — exact day being analyzed
+- **Balance at that point** — running total
+- **Transactions that day** — activity summary
+
+When you move your cursor away, the comparison returns to either your drag selection or the default full range.
+
+### Category-specific comparison
+
+When viewing distance-from-goal charts with filtered categories:
+
+- **Per-category progress** — how each category performed
+- **Goal achievement** — percentage toward target
+- **Comparison across categories** — relative performance
+
+This helps you understand which categories need more attention or adjustment.
+
+## Time range selection
+
+CashCat supports multiple time range views:
+
+- **Month to date (MTD)** — current month so far
+- **Year to date (YTD)** — current year so far
+- **Last 30 days** — rolling 30-day window
+- **Last 90 days** — rolling quarter
+- **All time** — complete transaction history
+- **Custom range** — pick specific start and end dates
+
+The chart automatically determines optimal time units (daily/weekly/monthly) based on the selected range.
+
+## Filtering
+
+Filter charts by:
+
+- **Category groups** — show only specific groups (Food, Needs, etc.)
+- **Individual categories** — drill down to single categories
+- **Multiple selections** — combine categories for comparison
+
+When filters are active:
+
+- Volume chart is hidden
+- Distance-from-goal chart appears (if categories have goals)
+- Only filtered transactions appear in calculations
+- Chart title updates to show "Filtered" status
+
+<Warning>
+Filtering affects all calculations including rollover and remaining balances. Clear filters to see your complete budget picture.
+</Warning>
+
+## Zoom functionality
+
+Interactive zoom features:
+
+- **Drag-to-zoom** on the line chart to focus on specific periods
+- **Zoom button** appears after zooming to reset view
+- **Synchronized zoom** — volume chart matches line chart zoom level
+- **Morphing animation** — smooth transitions between zoom levels (can be suppressed for performance)
+
+Zoom state triggers custom events (`preZoom`) to coordinate multiple charts.
+
+## Chart configuration
+
+All charts support:
+
+- **Responsive design** — adapts to screen size
+- **Dark mode optimized** — designed for CashCat's dark interface
+- **Accessibility** — keyboard navigation and ARIA labels
+- **Performance** — optimized rendering for large datasets
+- **Export** — charts can be exported as images (right-click)
+
+## Mobile optimization
+
+Charts work seamlessly on mobile:
+
+- **Touch gestures** — drag, pinch, and tap interactions
+- **Compact tooltips** — optimized for small screens
+- **Simplified hover states** — touch-friendly activation
+- **Persistent segment details** — no accidental dismissal
+
+All interactive features available on desktop work on mobile devices using touch events.

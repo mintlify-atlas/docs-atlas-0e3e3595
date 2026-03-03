@@ -1,0 +1,372 @@
+---
+title: Errors
+description: Error response format, common error codes, and troubleshooting guide for the CashCat API
+---
+
+The CashCat API uses standard HTTP status codes and returns detailed error information in a consistent JSON format.
+
+## Error response format
+
+All error responses contain an `error` object with three fields:
+
+```json
+{
+  "error": {
+    "code": "invalid_parameter",
+    "message": "Invalid limit. Must be between 1 and 1000.",
+    "details": null
+  }
+}
+```
+
+<ResponseField name="error.code" type="string" required>
+  Machine-readable error code that categorizes the error type
+</ResponseField>
+
+<ResponseField name="error.message" type="string" required>
+  Human-readable error message describing what went wrong
+</ResponseField>
+
+<ResponseField name="error.details" type="object" default="null">
+  Additional context about the error. May contain validation details, field-specific errors, or other diagnostic information.
+</ResponseField>
+
+## HTTP status codes
+
+The API uses standard HTTP status codes to indicate success or failure:
+
+| Status Code | Meaning |
+|-------------|----------|
+| `200 OK` | Request succeeded |
+| `201 Created` | Resource was successfully created |
+| `400 Bad Request` | Invalid request parameters or malformed request |
+| `401 Unauthorized` | Missing or invalid authentication credentials |
+| `403 Forbidden` | Authenticated but not authorized to access this resource |
+| `404 Not Found` | Requested resource does not exist |
+| `422 Unprocessable Entity` | Request was valid but could not be processed |
+| `429 Too Many Requests` | Rate limit exceeded |
+| `500 Internal Server Error` | Server error - please try again or contact support |
+
+## Common error codes
+
+### `unauthorized`
+
+Authentication failed or credentials are missing.
+
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Missing or malformed Authorization header",
+    "details": null
+  }
+}
+```
+
+**HTTP Status**: `401 Unauthorized`
+
+**Common causes**:
+- Missing `Authorization` header
+- Invalid Bearer token format
+- Invalid or revoked API key
+
+**Resolution**: Check that you're including a valid API key in the format `Bearer cc_live_YOUR_API_KEY`.
+
+### `invalid_parameter`
+
+One or more request parameters are invalid.
+
+```json
+{
+  "error": {
+    "code": "invalid_parameter",
+    "message": "Invalid limit. Must be between 1 and 1000.",
+    "details": null
+  }
+}
+```
+
+**HTTP Status**: `400 Bad Request`
+
+**Common causes**:
+- Parameter value is out of allowed range
+- Parameter format is incorrect (e.g., invalid UUID, date format)
+- Parameter type mismatch (e.g., string provided instead of number)
+- Using mutually exclusive parameters together
+
+**Examples**:
+
+<CodeGroup>
+
+```json Invalid UUID format
+{
+  "error": {
+    "code": "invalid_parameter",
+    "message": "Invalid budget_id. Must be a UUID.",
+    "details": null
+  }
+}
+```
+
+```json Invalid date format
+{
+  "error": {
+    "code": "invalid_parameter",
+    "message": "Invalid date format. Use YYYY-MM-DD.",
+    "details": null
+  }
+}
+```
+
+```json Invalid enum value
+{
+  "error": {
+    "code": "invalid_parameter",
+    "message": "Invalid type. Allowed values: income, expense, transfer",
+    "details": null
+  }
+}
+```
+
+```json Conflicting parameters
+{
+  "error": {
+    "code": "invalid_parameter",
+    "message": "Use either 'cursor' or 'offset', not both.",
+    "details": null
+  }
+}
+```
+
+</CodeGroup>
+
+### `missing_parameter`
+
+A required parameter was not provided.
+
+```json
+{
+  "error": {
+    "code": "missing_parameter",
+    "message": "Missing required parameter: amount",
+    "details": null
+  }
+}
+```
+
+**HTTP Status**: `400 Bad Request`
+
+**Resolution**: Check the endpoint documentation for required parameters and ensure all are included in your request.
+
+### `invalid_cursor`
+
+The pagination cursor is invalid or expired.
+
+```json
+{
+  "error": {
+    "code": "invalid_parameter",
+    "message": "Invalid cursor value.",
+    "details": null
+  }
+}
+```
+
+**HTTP Status**: `400 Bad Request`
+
+**Resolution**: Use the `next_cursor` value from the most recent response, or start over without a cursor.
+
+### `not_found`
+
+The requested resource does not exist.
+
+```json
+{
+  "error": {
+    "code": "not_found",
+    "message": "Budget not found",
+    "details": null
+  }
+}
+```
+
+**HTTP Status**: `404 Not Found`
+
+**Common causes**:
+- Resource ID is incorrect
+- Resource was deleted
+- Resource belongs to a different user
+
+### `forbidden`
+
+You don't have permission to access this resource.
+
+```json
+{
+  "error": {
+    "code": "forbidden",
+    "message": "You do not have access to this resource",
+    "details": null
+  }
+}
+```
+
+**HTTP Status**: `403 Forbidden`
+
+**Common causes**:
+- Attempting to access another user's resources
+- Insufficient permissions for the requested operation
+
+## Parameter validation
+
+The API performs extensive validation on request parameters. Here are the validation rules:
+
+### UUID parameters
+
+Must be valid UUIDs in the format `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`:
+
+```bash
+# Valid
+curl -X GET "https://api.cashcat.app/api/v1/budgets/123e4567-e89b-12d3-a456-426614174000"
+
+# Invalid - returns invalid_parameter error
+curl -X GET "https://api.cashcat.app/api/v1/budgets/invalid-uuid"
+```
+
+### Date parameters
+
+Must use `YYYY-MM-DD` format:
+
+```bash
+# Valid
+curl -X GET "https://api.cashcat.app/api/v1/transactions?date=2026-03-15"
+
+# Invalid - returns invalid_parameter error
+curl -X GET "https://api.cashcat.app/api/v1/transactions?date=03/15/2026"
+```
+
+### Month parameters
+
+Must use `YYYY-MM` format:
+
+```bash
+# Valid
+curl -X GET "https://api.cashcat.app/api/v1/reports?month=2026-03"
+
+# Invalid - returns invalid_parameter error
+curl -X GET "https://api.cashcat.app/api/v1/reports?month=March-2026"
+```
+
+### Number parameters
+
+Must be valid numbers within the specified range:
+
+```bash
+# Valid
+curl -X GET "https://api.cashcat.app/api/v1/transactions?limit=50"
+
+# Invalid - returns invalid_parameter error
+curl -X GET "https://api.cashcat.app/api/v1/transactions?limit=5000"
+```
+
+### Boolean parameters
+
+Accept `true`/`false` or `1`/`0` (case-insensitive):
+
+```bash
+# Valid
+curl -X GET "https://api.cashcat.app/api/v1/transactions?pending=true"
+curl -X GET "https://api.cashcat.app/api/v1/transactions?pending=1"
+
+# Invalid - returns invalid_parameter error
+curl -X GET "https://api.cashcat.app/api/v1/transactions?pending=yes"
+```
+
+### Enum parameters
+
+Must be one of the allowed values:
+
+```bash
+# Valid
+curl -X GET "https://api.cashcat.app/api/v1/transactions?type=expense"
+
+# Invalid - returns invalid_parameter error with allowed values
+curl -X GET "https://api.cashcat.app/api/v1/transactions?type=payment"
+```
+
+### List parameters
+
+Comma-separated values (e.g., UUIDs, field names):
+
+```bash
+# Valid
+curl -X GET "https://api.cashcat.app/api/v1/transactions?category_ids=uuid1,uuid2,uuid3"
+
+# Invalid - returns invalid_parameter error specifying which value is invalid
+curl -X GET "https://api.cashcat.app/api/v1/transactions?category_ids=uuid1,invalid,uuid3"
+```
+
+## Troubleshooting
+
+### Check your API key
+
+Ensure your API key is valid and properly formatted:
+
+```bash
+curl -X GET "https://api.cashcat.app/api/v1/budgets" \
+  -H "Authorization: Bearer cc_live_YOUR_API_KEY" \
+  -v
+```
+
+Look for the response status code and error message in the output.
+
+### Validate request parameters
+
+Double-check parameter names, types, and formats against the endpoint documentation:
+
+- UUID parameters must be valid UUIDs
+- Date parameters must use `YYYY-MM-DD` format
+- Numeric parameters must be within allowed ranges
+- Enum parameters must be from the allowed set
+
+### Check for typos
+
+Common mistakes:
+- Misspelled parameter names
+- Wrong HTTP method (GET vs POST)
+- Incorrect endpoint path
+- Missing `/api/v1` prefix in the URL
+
+### Test with minimal parameters
+
+Start with the minimum required parameters and add optional ones incrementally:
+
+```bash
+# Start simple
+curl -X GET "https://api.cashcat.app/api/v1/transactions" \
+  -H "Authorization: Bearer cc_live_YOUR_API_KEY"
+
+# Add parameters one at a time
+curl -X GET "https://api.cashcat.app/api/v1/transactions?limit=10" \
+  -H "Authorization: Bearer cc_live_YOUR_API_KEY"
+```
+
+### Check the error details
+
+The `error.message` field provides specific information about what went wrong. Read it carefully for clues about how to fix the issue.
+
+### Rate limiting
+
+If you're receiving `429 Too Many Requests` errors, reduce your request rate and implement exponential backoff.
+
+## Getting help
+
+If you're still experiencing issues:
+
+1. Check the [API documentation](/api/overview) for endpoint-specific requirements
+2. Review the [authentication guide](/api/authentication) if you're getting auth errors
+3. Contact support with:
+   - The full error response
+   - The request you're making (without your API key)
+   - The endpoint you're trying to access
+   - Any relevant timestamps

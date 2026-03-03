@@ -1,0 +1,245 @@
+---
+title: Get budget left by category
+description: Calculate remaining budget for each category with rollover support
+---
+
+## Endpoint
+
+```
+GET /api/v1/categories/budget-left
+```
+
+Calculate the remaining budget (budget left) for each category in a given month, including assigned amounts, rollover from previous months, and spent amounts.
+
+## Query parameters
+
+<ParamField query="month" type="string">
+  Month for calculation in YYYY-MM format. Defaults to current month
+</ParamField>
+
+<ParamField query="as_of_date" type="string">
+  Calculate spending as of this date (YYYY-MM-DD). Must be within the specified month. Defaults to last day of month
+</ParamField>
+
+<ParamField query="category_id" type="string">
+  Filter results to a specific category UUID
+</ParamField>
+
+<ParamField query="group_id" type="string">
+  Filter results to categories in this group UUID
+</ParamField>
+
+<ParamField query="goal_type" type="string">
+  Filter by category goal type. Options: `spending`, `savings`, `emergency_fund`
+</ParamField>
+
+<ParamField query="only_overspent" type="boolean" default="false">
+  Only return categories where budget_left is negative. Accepts `true`, `false`, `1`, or `0`
+</ParamField>
+
+<ParamField query="include_zero" type="boolean" default="true">
+  Include categories with zero assigned, spent, and rollover. Accepts `true`, `false`, `1`, or `0`
+</ParamField>
+
+<ParamField query="min_budget_left" type="number">
+  Filter categories with budget_left greater than or equal to this value
+</ParamField>
+
+<ParamField query="max_budget_left" type="number">
+  Filter categories with budget_left less than or equal to this value
+</ParamField>
+
+<ParamField query="sort" type="string">
+  Field to sort by. Options: `budget_left`, `spent`, `assigned`
+</ParamField>
+
+<ParamField query="order" type="string" default="asc">
+  Sort order. Options: `asc`, `desc`
+</ParamField>
+
+<ParamField query="fields" type="string">
+  Comma-separated list of fields to return. Available fields: `category_id`, `category_name`, `group`, `goal`, `goal_type`, `month`, `assigned`, `rollover`, `spent`, `budget_left`
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Maximum number of results to return (1-1000)
+</ParamField>
+
+<ParamField query="offset" type="integer" default="0">
+  Number of results to skip for pagination
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  Cursor for pagination. Cannot be used with `offset`
+</ParamField>
+
+## Response fields
+
+<ResponseField name="data" type="array">
+  Array of budget left calculation objects
+
+  <ResponseField name="category_id" type="string">
+    Category UUID
+  </ResponseField>
+
+  <ResponseField name="category_name" type="string">
+    Category name
+  </ResponseField>
+
+  <ResponseField name="group" type="string">
+    Group name or "Uncategorized"
+  </ResponseField>
+
+  <ResponseField name="goal" type="number | null">
+    Category budget goal
+  </ResponseField>
+
+  <ResponseField name="goal_type" type="string">
+    Type of goal: `spending`, `savings`, or `emergency_fund`
+  </ResponseField>
+
+  <ResponseField name="month" type="string">
+    Month for this calculation in YYYY-MM format
+  </ResponseField>
+
+  <ResponseField name="assigned" type="number">
+    Amount assigned to this category for the month
+  </ResponseField>
+
+  <ResponseField name="rollover" type="number">
+    Rollover amount from previous months (assigned - spent in prior months)
+  </ResponseField>
+
+  <ResponseField name="spent" type="number">
+    Amount spent in this category during the month (up to as_of_date)
+  </ResponseField>
+
+  <ResponseField name="budget_left" type="number">
+    Remaining budget calculated as: assigned + rollover - spent
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Pagination and metadata
+
+  <ResponseField name="total" type="integer">
+    Total number of matching categories
+  </ResponseField>
+
+  <ResponseField name="returned" type="integer">
+    Number of categories returned in this response
+  </ResponseField>
+
+  <ResponseField name="limit" type="integer">
+    Maximum results per page
+  </ResponseField>
+
+  <ResponseField name="offset" type="integer">
+    Current offset
+  </ResponseField>
+
+  <ResponseField name="next_cursor" type="string | null">
+    Cursor for the next page, or null if no more results
+  </ResponseField>
+
+  <ResponseField name="month" type="string">
+    Month used for calculation
+  </ResponseField>
+
+  <ResponseField name="start_date" type="string">
+    First day of the month
+  </ResponseField>
+
+  <ResponseField name="end_date" type="string">
+    Last day of the month
+  </ResponseField>
+
+  <ResponseField name="as_of_date" type="string">
+    Date used for spending calculation
+  </ResponseField>
+
+  <ResponseField name="sort" type="string | null">
+    Field used for sorting
+  </ResponseField>
+
+  <ResponseField name="order" type="string">
+    Sort order applied
+  </ResponseField>
+</ResponseField>
+
+## Example request
+
+```bash
+curl -X GET "https://api.cashcat.app/api/v1/categories/budget-left?month=2024-03&only_overspent=false&sort=budget_left&order=asc" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Example response
+
+```json
+{
+  "data": [
+    {
+      "category_id": "c1d2e3f4-a5b6-7890-cdef-123456789012",
+      "category_name": "Groceries",
+      "group": "Essential Expenses",
+      "goal": 600.00,
+      "goal_type": "spending",
+      "month": "2024-03",
+      "assigned": 600.00,
+      "rollover": 25.50,
+      "spent": 545.30,
+      "budget_left": 80.20
+    },
+    {
+      "category_id": "d2e3f4a5-b6c7-8901-defg-234567890123",
+      "category_name": "Dining Out",
+      "group": "Essential Expenses",
+      "goal": 200.00,
+      "goal_type": "spending",
+      "month": "2024-03",
+      "assigned": 200.00,
+      "rollover": 0.00,
+      "spent": 215.75,
+      "budget_left": -15.75
+    },
+    {
+      "category_id": "e3f4a5b6-c7d8-9012-efgh-345678901234",
+      "category_name": "Emergency Fund",
+      "group": "Savings",
+      "goal": 500.00,
+      "goal_type": "emergency_fund",
+      "month": "2024-03",
+      "assigned": 500.00,
+      "rollover": 1500.00,
+      "spent": 0.00,
+      "budget_left": 2000.00
+    }
+  ],
+  "meta": {
+    "total": 3,
+    "returned": 3,
+    "limit": 100,
+    "offset": 0,
+    "next_cursor": null,
+    "month": "2024-03",
+    "start_date": "2024-03-01",
+    "end_date": "2024-03-31",
+    "as_of_date": "2024-03-31",
+    "sort": "budget_left",
+    "order": "asc"
+  }
+}
+```
+
+## Rollover calculation
+
+The rollover amount is calculated by:
+
+1. Finding the earliest month with an assignment for the category
+2. For each month from that earliest month until the target month:
+   - Add the assigned amount for that month
+   - Subtract the spent amount for that month
+3. The cumulative difference becomes the rollover for the target month
+
+This ensures that unspent budget from previous months carries forward when rollover is enabled for the category.

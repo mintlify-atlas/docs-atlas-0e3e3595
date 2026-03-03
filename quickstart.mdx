@@ -1,80 +1,88 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Get from signup to your first budget in minutes
 ---
 
-## Get started in three steps
+# Quickstart
 
-Get your documentation site running locally and make your first customization.
+This guide will take you from signup through creating your first budget category and logging your first transaction. By the end, you'll understand the core workflow of zero-based budgeting in CashCat.
 
-### Step 1: Set up your local environment
-
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+<Steps>
+  <Step title="Create your account">
+    Visit [cashcat.app](https://cashcat.app) and sign up with your email address. CashCat uses secure authentication to protect your financial data.
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+    Once you verify your email, you'll be taken to your budget dashboard.
+  </Step>
+
+  <Step title="Set up your accounts">
+    When you first open CashCat, you'll see the onboarding overlay. Click **"Create Your Budget!"** to begin.
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+    The Account Modal will open automatically. Here you'll add your financial accounts (checking, savings, credit cards, etc.).
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    For each account:
+    - Enter the account name (e.g., "Main Checking")
+    - Set the current balance
+    - Choose the account type
+    
+    <Note>
+    Don't worry about being perfect here. You can always edit or add accounts later from the settings menu.
+    </Note>
+  </Step>
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+  <Step title="Create your first budget category">
+    After closing the Account Modal, the Manage Budget Modal will open in wizard mode.
+    
+    This is where zero-based budgeting begins. Create categories for how you want to spend your money this month:
+    
+    - **Groceries** — for food shopping
+    - **Rent** — for housing costs
+    - **Entertainment** — for fun activities
+    - **Transportation** — for gas or transit
+    
+    For each category:
+    1. Enter a category name
+    2. Set a monthly budget amount
+    3. Click **Add** or press Enter
+    
+    The goal is to assign all your income until you have zero dollars unassigned. This ensures every penny has a purpose.
+  </Step>
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+  <Step title="Log your first transaction">
+    Now that you have accounts and categories, you're ready to track spending.
+    
+    When you make a purchase:
+    1. Open the transaction entry form on your budget dashboard
+    2. Enter the amount you spent
+    3. Select the category (e.g., "Groceries")
+    4. Choose which account the money came from
+    5. Add a description (optional but helpful)
+    6. Save the transaction
+    
+    Your budget will automatically update. The category will show how much you've spent and how much remains for the month.
+  </Step>
 
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+  <Step title="Stay on track">
+    The core workflow is simple:
+    
+    - **At the start of each month:** Assign all your income into categories
+    - **Throughout the month:** Log transactions as you spend
+    - **Before making purchases:** Check your category balances to stay within budget
+    
+    Unspent money in categories will roll forward to future months (coming soon), so you never lose progress toward your goals.
+  </Step>
+</Steps>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Installation" icon="mobile" href="/installation">
+    Install CashCat on your phone for on-the-go budgeting
+  </Card>
+  <Card title="Key features" icon="star" href="/key-features">
+    Explore custom goals, flexible editing, and more
+  </Card>
 </CardGroup>
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+**Pro tip:** The best way to build a budgeting habit is to log transactions immediately after making them. Install the mobile app so CashCat is always in your pocket.
 </Note>

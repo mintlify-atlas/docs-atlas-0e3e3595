@@ -1,0 +1,271 @@
+---
+title: MCP tools
+description: Documentation for all three CashCat MCP tools and their input schemas.
+---
+
+CashCat provides three specialized tools through the MCP endpoint for financial data access and analysis.
+
+## cashcat_get
+
+Generic read-only access to any CashCat REST GET endpoint with optional auto-pagination.
+
+**Description**: Read any CashCat REST GET endpoint (accounts, categories, groups, assignments, transactions, transfers, budget-left).
+
+### Parameters
+
+<ParamField path="endpoint" type="string" required>
+  The REST API endpoint to query. Must be one of:
+  - `accounts`
+  - `assignments`
+  - `categories`
+  - `categories/budget-left`
+  - `groups`
+  - `transactions`
+  - `transfers`
+</ParamField>
+
+<ParamField path="query" type="object">
+  Query parameters passed through to the selected endpoint. Each endpoint accepts different query parameters based on its REST API specification.
+  
+  Values can be strings, numbers, or booleans.
+</ParamField>
+
+<ParamField path="paginate_all" type="boolean" default="false">
+  If `true`, automatically follows cursor pagination until `max_rows` is reached or all data is retrieved.
+  
+  If `false`, returns only the first page of results.
+</ParamField>
+
+<ParamField path="max_rows" type="integer" default="2000">
+  Maximum number of rows to return when `paginate_all` is `true`.
+  
+  - Minimum: `1`
+  - Maximum: `10000`
+</ParamField>
+
+### Response
+
+When `paginate_all` is `false`:
+
+```json
+{
+  "endpoint": "transactions",
+  "paginated": false,
+  "data": [...],
+  "meta": {
+    "total": 150,
+    "next_cursor": "eyJ..."
+  }
+}
+```
+
+When `paginate_all` is `true`:
+
+```json
+{
+  "endpoint": "transactions",
+  "paginated": true,
+  "max_rows": 2000,
+  "returned": 1842,
+  "truncated": false,
+  "data": [...],
+  "meta": {...}
+}
+```
+
+## cashcat_financial_overview
+
+Advisory-friendly financial snapshot including net worth, budget health, overspending analysis, and monthly cashflow.
+
+**Description**: Get an advisory-friendly snapshot: net worth, budget health, overspending, and monthly cashflow.
+
+### Parameters
+
+<ParamField path="month" type="string">
+  Optional month in `YYYY-MM` format.
+  
+  If omitted, defaults to the current month (or the month derived from `as_of_date`).
+</ParamField>
+
+<ParamField path="as_of_date" type="string">
+  Optional as-of date in `YYYY-MM-DD` format for balance calculations.
+  
+  Must be in the same month as `month` if both are provided.
+</ParamField>
+
+<ParamField path="max_rows_for_summaries" type="integer" default="4000">
+  Maximum rows to fetch per endpoint when building summaries.
+  
+  - Minimum: `100`
+  - Maximum: `10000`
+</ParamField>
+
+<ParamField path="recent_items_limit" type="integer" default="25">
+  Number of recent transactions and transfers to include in the response.
+  
+  - Minimum: `1`
+  - Maximum: `200`
+</ParamField>
+
+### Response
+
+```json
+{
+  "generated_at": "2026-03-03T10:30:00Z",
+  "month": "2026-02",
+  "as_of_date": null,
+  "summary": {
+    "net_worth": 45230.50,
+    "account_count": 5,
+    "category_count": 32,
+    "group_count": 8,
+    "totals": {
+      "assigned": 3500.00,
+      "spent": 2847.33,
+      "rollover": 450.00,
+      "budget_left": 1102.67
+    },
+    "cashflow": {
+      "income_total": 5200.00,
+      "starting_total": 0.00,
+      "payment_total": 2847.33,
+      "net_transaction_cashflow": 2352.67,
+      "transfer_volume": 1500.00
+    },
+    "overspent_category_count": 3
+  },
+  "highlights": {
+    "overspent_categories": [...],
+    "top_spending_categories": [...],
+    "groups_by_lowest_budget_left": [...]
+  },
+  "recent": {
+    "transactions": [...],
+    "transfers": [...]
+  },
+  "truncation": {
+    "budget_left": false,
+    "transactions": false,
+    "transfers": false,
+    "max_rows_for_summaries": 4000
+  }
+}
+```
+
+## cashcat_full_context
+
+Fetch a broad, structured financial context bundle across all major endpoints for deep analysis and advice.
+
+**Description**: Fetch a broad, structured financial context bundle across all major endpoints for deep analysis/advice.
+
+### Parameters
+
+<ParamField path="month" type="string">
+  Optional month in `YYYY-MM` format.
+  
+  Cannot be used together with `start_date` and `end_date`.
+</ParamField>
+
+<ParamField path="start_date" type="string">
+  Optional start date in `YYYY-MM-DD` format for transaction and transfer windows.
+  
+  Cannot be used together with `month`.
+</ParamField>
+
+<ParamField path="end_date" type="string">
+  Optional end date in `YYYY-MM-DD` format for transaction and transfer windows.
+  
+  Cannot be used together with `month`. Must be after `start_date`.
+</ParamField>
+
+<ParamField path="as_of_date" type="string">
+  Optional balance as-of date in `YYYY-MM-DD` format.
+</ParamField>
+
+<ParamField path="include_accounts" type="boolean" default="true">
+  Include accounts with balances in the response.
+</ParamField>
+
+<ParamField path="include_categories" type="boolean" default="true">
+  Include categories in the response.
+</ParamField>
+
+<ParamField path="include_groups" type="boolean" default="true">
+  Include groups with budget totals in the response.
+</ParamField>
+
+<ParamField path="include_assignments" type="boolean" default="true">
+  Include budget assignments in the response.
+</ParamField>
+
+<ParamField path="include_transactions" type="boolean" default="true">
+  Include transactions in the response.
+</ParamField>
+
+<ParamField path="include_transfers" type="boolean" default="true">
+  Include transfers in the response.
+</ParamField>
+
+<ParamField path="include_budget_left" type="boolean" default="true">
+  Include budget-left calculations in the response.
+</ParamField>
+
+<ParamField path="max_rows_per_endpoint" type="integer" default="4000">
+  Maximum rows to fetch per endpoint.
+  
+  - Minimum: `100`
+  - Maximum: `10000`
+</ParamField>
+
+### Response
+
+```json
+{
+  "generated_at": "2026-03-03T10:30:00Z",
+  "query": {
+    "month": "2026-02",
+    "start_date": null,
+    "end_date": null,
+    "as_of_date": null,
+    "context_month": "2026-02",
+    "max_rows_per_endpoint": 4000
+  },
+  "overview": {
+    "net_worth": 45230.50,
+    "budget_left_total": 1102.67,
+    "spending_total": 2847.33,
+    "income_total": 5200.00
+  },
+  "counts": {
+    "accounts": 5,
+    "categories": 32,
+    "groups": 8,
+    "assignments": 64,
+    "transactions": 187,
+    "transfers": 12,
+    "budget_left": 32
+  },
+  "truncation": {
+    "accounts": false,
+    "categories": false,
+    "groups": false,
+    "assignments": false,
+    "transactions": false,
+    "transfers": false,
+    "budget_left": false
+  },
+  "datasets": {
+    "accounts": {
+      "data": [...],
+      "truncated": false,
+      "meta": {...}
+    },
+    "categories": {...},
+    "groups": {...},
+    "assignments": {...},
+    "transactions": {...},
+    "transfers": {...},
+    "budget_left": {...}
+  }
+}
+```

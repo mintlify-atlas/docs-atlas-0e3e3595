@@ -1,0 +1,194 @@
+---
+title: Mobile apps
+description: Native iOS and Android apps built with Capacitor for a seamless mobile experience
+---
+
+CashCat is available as native mobile apps for iOS and Android, providing a fast, responsive experience with offline support and native device features.
+
+## Platform support
+
+CashCat mobile apps are built using Capacitor, a cross-platform native runtime that wraps the web app with native functionality.
+
+<CardGroup cols={2}>
+  <Card title="iOS" icon="apple">
+    Native iOS app built with Capacitor 8.x
+  </Card>
+  <Card title="Android" icon="android">
+    Native Android app built with Capacitor 8.x
+  </Card>
+</CardGroup>
+
+## Architecture
+
+The mobile apps use a hybrid architecture:
+
+- **Web core** — Next.js app provides the UI and business logic
+- **Native shell** — Capacitor wraps the web app in native containers
+- **Native APIs** — Access to device features through Capacitor plugins
+- **Offline storage** — IndexedDB for local data persistence
+
+### App configuration
+
+From `capacitor.config.ts`:
+
+```typescript
+const config: CapacitorConfig = {
+  appId: 'com.lemonaise.cashcat',
+  appName: 'CashCat',
+  webDir: 'out',
+  ios: {
+    preferredContentMode: 'mobile'
+  }
+};
+```
+
+- **App ID**: `com.lemonaise.cashcat`
+- **Web directory**: Uses Next.js static export (`out`)
+- **iOS mode**: Optimized for mobile viewport
+
+## Native features
+
+CashCat uses Capacitor plugins to access native device capabilities:
+
+### Network detection
+
+The `@capacitor/network` plugin monitors connectivity:
+
+- **Real-time status** — instant online/offline detection
+- **Status changes** — event listeners for connection changes
+- **Web fallback** — uses browser `navigator.onLine` when plugin unavailable
+
+See [Offline mode](/features/offline-mode) for details on how network status affects app behavior.
+
+### App lifecycle
+
+The `@capacitor/app` plugin manages app state:
+
+- **Background/foreground** — detect when app is active
+- **Deep linking** — handle custom URL schemes (future feature)
+- **App info** — version and build information
+
+## Build process
+
+CashCat includes automated build scripts for mobile platforms:
+
+```json
+{
+  "scripts": {
+    "build:android": "node scripts/build-mobile.js",
+    "build:ios": "node scripts/build-mobile.js"
+  }
+}
+```
+
+The build process:
+
+1. Builds the Next.js app as a static export
+2. Copies assets to native projects
+3. Syncs Capacitor configuration
+4. Updates native dependencies
+
+<Note>
+iOS builds require Xcode on macOS. Android builds require Android Studio or Android SDK.
+</Note>
+
+## Progressive Web App (PWA)
+
+In addition to native apps, CashCat supports PWA installation:
+
+- **Add to Home Screen** — install from mobile browser
+- **Offline support** — service worker caching
+- **App-like experience** — full-screen mode, splash screen
+- **Auto-updates** — new versions download automatically
+
+The PWA uses `next-pwa` for service worker generation and caching strategies.
+
+## Mobile-optimized UI
+
+The entire CashCat interface is designed for mobile:
+
+### Responsive layouts
+
+- **Touch targets** — all buttons sized for finger taps
+- **Mobile navigation** — bottom tab bar on small screens
+- **Slide-up modals** — native-feeling bottom sheets
+- **Safe area insets** — respects notches and home indicators
+
+### Gesture support
+
+- **Swipe to delete** — remove transactions with swipe gesture
+- **Pull to refresh** — sync data with pull-down gesture
+- **Drag and drop** — reorder categories and groups
+- **Pinch to zoom** — charts support touch zoom (future)
+
+### Mobile-specific features
+
+Transaction modal adapts for mobile:
+
+```tsx
+className="min-h-[100dvh] md:min-h-0" // Full height on mobile
+p-4 pt-[calc(env(safe-area-inset-top)+1rem)] // Safe area support
+```
+
+- **Full-screen modals** — maximize space on small screens
+- **Bottom sheets** — native iOS/Android feel
+- **Keyboard handling** — auto-scroll to keep inputs visible
+- **Focus management** — auto-focus for quick entry
+
+<Tip>
+The transaction modal auto-focuses the amount input on mobile, then moves to vendor after you finish entering the amount.
+</Tip>
+
+## Performance optimization
+
+Mobile apps include specific optimizations:
+
+- **Lazy loading** — components load on demand
+- **Image optimization** — Next.js Image component with proper sizing
+- **Bundle splitting** — code split by route
+- **Query persistence** — TanStack Query cache persists to IndexedDB
+- **Debounced search** — vendor search waits 50ms to reduce renders
+
+## Data persistence
+
+Mobile apps store data locally:
+
+- **TanStack Query cache** — API responses cached in IndexedDB via `idb-keyval`
+- **Async storage persister** — `@tanstack/query-async-storage-persister`
+- **Automatic sync** — cache hydrates on app launch
+- **Offline queue** — mutations queued when offline (future feature)
+
+## Platform-specific considerations
+
+### iOS
+
+- **SPM support** — uses Swift Package Manager for dependencies
+- **Content mode**: Set to `mobile` for consistent viewport
+- **App Store distribution** — requires Apple Developer account
+- **TestFlight** — available for beta testing
+
+### Android
+
+- **Gradle build** — standard Android build system
+- **Material Design** — follows Android design guidelines where appropriate
+- **Play Store distribution** — requires Google Play Developer account
+- **APK/AAB** — supports both formats
+
+## Version management
+
+Current version: `0.14.0` (from package.json)
+
+- **Semantic versioning** — major.minor.patch format
+- **Synchronized versions** — web and mobile use same version
+- **Release notes** — tracked in GitHub releases
+
+## Future enhancements
+
+Planned mobile features:
+
+- **Biometric authentication** — Face ID, Touch ID, fingerprint
+- **Camera integration** — scan receipts (requires OCR)
+- **Push notifications** — budget alerts and reminders
+- **Widgets** — home screen widgets for quick balance view
+- **Haptic feedback** — tactile responses for actions
+- **Share sheet** — share transactions or reports

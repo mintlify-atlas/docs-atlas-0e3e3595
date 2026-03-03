@@ -1,0 +1,144 @@
+---
+title: Overview
+description: Introduction to the CashCat API, including base URL, versioning, response formats, and pagination
+---
+
+The CashCat API is a REST API that allows you to programmatically manage budgets, transactions, categories, and more. All requests and responses use JSON format.
+
+## Base URL
+
+All API endpoints are prefixed with:
+
+```
+https://api.cashcat.app/api/v1
+```
+
+## Versioning
+
+The API is versioned through the URL path. The current version is `v1`. Breaking changes will result in a new version number.
+
+## Authentication
+
+All API requests require authentication using an API key passed as a Bearer token in the `Authorization` header. See the [Authentication](/api/authentication) page for details.
+
+## Response format
+
+### Success responses
+
+Successful responses return a JSON object with a `data` field containing the requested resource or array of resources:
+
+```json
+{
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "name": "Groceries",
+    "amount": 150.00
+  }
+}
+```
+
+For list endpoints, responses may include a `meta` object with pagination information:
+
+```json
+{
+  "data": [
+    { "id": "123e4567-e89b-12d3-a456-426614174000", "name": "Groceries" },
+    { "id": "223e4567-e89b-12d3-a456-426614174001", "name": "Rent" }
+  ],
+  "meta": {
+    "total": 42,
+    "returned": 2,
+    "limit": 100,
+    "offset": 0,
+    "next_cursor": "MTAw"
+  }
+}
+```
+
+### Error responses
+
+Error responses return a JSON object with an `error` field containing details about what went wrong. See the [Errors](/api/errors) page for complete documentation.
+
+```json
+{
+  "error": {
+    "code": "invalid_parameter",
+    "message": "Invalid limit. Must be between 1 and 1000.",
+    "details": null
+  }
+}
+```
+
+## Pagination
+
+List endpoints support pagination using either offset-based or cursor-based pagination.
+
+### Parameters
+
+<ParamField query="limit" type="integer" default="100">
+  Maximum number of items to return. Must be between 1 and 1000.
+</ParamField>
+
+<ParamField query="offset" type="integer" default="0">
+  Number of items to skip before returning results. Cannot be used with `cursor`.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  Opaque cursor token for pagination. Use the `next_cursor` value from a previous response. Cannot be used with `offset`.
+</ParamField>
+
+### Offset-based pagination
+
+Use `limit` and `offset` parameters to paginate through results:
+
+```bash
+curl -X GET "https://api.cashcat.app/api/v1/transactions?limit=50&offset=0" \
+  -H "Authorization: Bearer cc_live_YOUR_API_KEY"
+```
+
+### Cursor-based pagination
+
+For better performance with large datasets, use cursor-based pagination with the `next_cursor` value returned in the response:
+
+```bash
+curl -X GET "https://api.cashcat.app/api/v1/transactions?limit=50&cursor=MTAw" \
+  -H "Authorization: Bearer cc_live_YOUR_API_KEY"
+```
+
+### Pagination metadata
+
+List responses include a `meta` object with pagination information:
+
+<ResponseField name="meta.total" type="integer">
+  Total number of items available
+</ResponseField>
+
+<ResponseField name="meta.returned" type="integer">
+  Number of items returned in this response
+</ResponseField>
+
+<ResponseField name="meta.limit" type="integer">
+  The limit used for this request
+</ResponseField>
+
+<ResponseField name="meta.offset" type="integer">
+  The offset used for this request
+</ResponseField>
+
+<ResponseField name="meta.next_cursor" type="string" default="null">
+  Cursor token to use for fetching the next page. `null` if there are no more results.
+</ResponseField>
+
+## Data formats
+
+The API uses the following standard formats:
+
+- **UUIDs**: Resources are identified by UUIDs in the format `123e4567-e89b-12d3-a456-426614174000`
+- **Dates**: Date strings use the format `YYYY-MM-DD` (e.g., `2026-03-15`)
+- **Months**: Month strings use the format `YYYY-MM` (e.g., `2026-03`)
+- **Timestamps**: ISO 8601 format with timezone (e.g., `2026-03-15T14:30:00.000Z`)
+- **Amounts**: Decimal numbers representing monetary values (e.g., `150.00`)
+
+## Rate limits
+
+The API enforces rate limits to ensure fair usage. Rate limit information is included in response headers (details to be documented).

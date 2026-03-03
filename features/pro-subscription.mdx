@@ -1,0 +1,248 @@
+---
+title: Pro subscription
+description: Premium features and benefits available with CashCat Pro
+---
+
+CashCat Pro unlocks premium features and helps support continued development of the app. While CashCat's core budgeting features are free, Pro subscribers get access to advanced functionality.
+
+## Subscription status
+
+CashCat Pro subscription status is managed through the database:
+
+```typescript
+export type SubscriptionStatus =
+  | 'active'
+  | 'on_trial'
+  | 'past_due'
+  | 'unpaid'
+  | 'cancelled'
+  | 'expired'
+  | 'paused'
+  | 'inactive';
+```
+
+### Active statuses
+
+These statuses grant access to Pro features:
+
+- **active** — paid subscription in good standing
+- **on_trial** — free trial period (before first payment)
+
+<Info>
+Founders and internal testers have permanent Pro access regardless of subscription status.
+</Info>
+
+## Checking subscription
+
+The `checkSubscription` function verifies Pro access:
+
+```typescript
+import { checkSubscription } from '@/lib/subscription';
+
+const { isActive, status, variantId, renewsAt, endsAt } = 
+  await checkSubscription(userId);
+
+if (isActive) {
+  // Grant Pro features
+}
+```
+
+### Server-side only
+
+<Warning>
+The `checkSubscription` function uses the admin client to bypass RLS. Only call from server-side code (Server Components, API routes).
+</Warning>
+
+### Response fields
+
+- `isActive` — boolean indicating Pro access
+- `status` — current subscription status
+- `variantId` — product variant ID (for different plan tiers)
+- `renewsAt` — next renewal date (ISO string)
+- `endsAt` — cancellation/expiration date (ISO string)
+
+## Forever Pro list
+
+Certain email addresses have permanent Pro access:
+
+```typescript
+const FOREVER_PRO_EMAILS = new Set([
+  'indigogonolan@gmail.com',
+  'wilcoxjedu@gmail.com',
+]);
+```
+
+These users:
+
+- Always return `isActive: true`
+- Don't need active subscription in database
+- Used for founders and core team members
+
+## Subscription data model
+
+Subscriptions are stored in the `subscriptions` table:
+
+```sql
+CREATE TABLE subscriptions (
+  user_id UUID REFERENCES auth.users(id),
+  status TEXT,
+  variant_id TEXT,
+  renews_at TIMESTAMP,
+  ends_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+### Database queries
+
+The subscription checker:
+
+1. Fetches user email from `auth.users`
+2. Checks against `FOREVER_PRO_EMAILS`
+3. Queries `subscriptions` table for user_id
+4. Orders by `created_at DESC` to get most recent
+5. Returns single subscription record
+
+## Pro features
+
+While specific Pro features are still being developed, the infrastructure supports:
+
+### Planned Pro features
+
+<CardGroup cols={2}>
+  <Card title="Advanced reports" icon="chart-line">
+    Detailed spending reports, trends, and forecasting
+  </Card>
+  <Card title="Custom categories" icon="folder-tree">
+    Unlimited categories and groups
+  </Card>
+  <Card title="Multi-currency" icon="coins">
+    Support for multiple currencies and exchange rates
+  </Card>
+  <Card title="Export data" icon="download">
+    Export transactions to CSV, Excel, PDF
+  </Card>
+  <Card title="Bank sync" icon="building-columns">
+    Automatic transaction imports via OpenBanking
+  </Card>
+  <Card title="Shared budgets" icon="users">
+    Collaborate with partner or family members
+  </Card>
+  <Card title="Priority support" icon="headset">
+    Faster response times for questions and issues
+  </Card>
+  <Card title="Early access" icon="rocket">
+    Try new features before general release
+  </Card>
+</CardGroup>
+
+## Early access program
+
+CashCat is currently in early access for testers:
+
+- **Free during beta** — no subscription required while testing
+- **Founder pricing** — early users get special lifetime pricing
+- **Feedback priority** — testers help shape development
+- **Discord community** — join discussions at https://discord.gg/C9mYnEdAQA
+
+<Note>
+Subscription features are being developed. Current testers have access to all features while the app is in early access.
+</Note>
+
+## Subscription management
+
+Subscription lifecycle is managed through:
+
+### Creation
+
+- User signs up for Pro via payment provider
+- Webhook creates record in `subscriptions` table
+- Status set to `on_trial` or `active`
+- User immediately gains Pro access
+
+### Renewal
+
+- Payment provider processes renewal automatically
+- Webhook updates `renews_at` date
+- Status remains `active`
+- No interruption in service
+
+### Cancellation
+
+- User cancels via payment provider
+- Webhook updates status to `cancelled`
+- `ends_at` set to end of billing period
+- Pro access continues until `ends_at`
+
+### Expiration
+
+- When `ends_at` is reached
+- Status changes to `expired`
+- `isActive` returns `false`
+- User loses Pro features
+
+## Implementation example
+
+Protecting a feature behind Pro:
+
+```typescript
+import { checkSubscription } from '@/lib/subscription';
+
+export default async function AdvancedReportsPage() {
+  const userId = await getCurrentUserId();
+  const { isActive } = await checkSubscription(userId);
+
+  if (!isActive) {
+    return <ProUpgradePrompt feature="Advanced Reports" />;
+  }
+
+  return <AdvancedReports />;
+}
+```
+
+### Client-side checks
+
+For client components, pass subscription status from server:
+
+```typescript
+// Server Component
+const subscription = await checkSubscription(userId);
+
+return (
+  <ClientComponent isProUser={subscription.isActive} />
+);
+```
+
+```typescript
+// Client Component
+function ClientComponent({ isProUser }: { isProUser: boolean }) {
+  if (!isProUser) {
+    return <LockedFeature />;
+  }
+  return <ProFeature />;
+}
+```
+
+## Pricing
+
+Pricing details will be announced when CashCat exits early access. Expected tiers:
+
+- **Free** — core budgeting features, unlimited transactions
+- **Pro** — advanced features, priority support
+- **Lifetime** — one-time payment for permanent Pro access
+
+<Tip>
+Founders and early testers will receive special pricing when subscriptions launch.
+</Tip>
+
+## Philosophy
+
+CashCat's subscription model follows these principles:
+
+- **Core features free** — zero-based budgeting always free
+- **No ads** — subscription revenue, not advertisers
+- **No tracking** — your data stays private
+- **Fair pricing** — affordable for everyone
+- **Transparent** — clear feature differences between tiers
+
+The Pro subscription supports ongoing development while keeping essential budgeting accessible to all.

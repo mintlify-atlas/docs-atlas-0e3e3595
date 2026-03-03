@@ -1,0 +1,194 @@
+---
+title: Get groups
+description: Retrieve category groups with optional budget totals and category counts
+---
+
+## Endpoint
+
+```
+GET /api/v1/groups
+```
+
+Retrieve all category groups for the authenticated user with optional monthly budget totals and category counts.
+
+## Query parameters
+
+<ParamField query="q" type="string">
+  Search groups by name using case-insensitive pattern matching
+</ParamField>
+
+<ParamField query="ids" type="string">
+  Comma-separated list of group UUIDs to filter by
+</ParamField>
+
+<ParamField query="include_category_count" type="boolean" default="false">
+  Include the count of categories in each group. Accepts `true`, `false`, `1`, or `0`
+</ParamField>
+
+<ParamField query="include_budget_totals" type="boolean" default="false">
+  Include monthly budget totals (assigned, spent, rollover, budget left) for the group. Accepts `true`, `false`, `1`, or `0`
+</ParamField>
+
+<ParamField query="month" type="string">
+  Month for budget totals in YYYY-MM format. Defaults to current month when `include_budget_totals=true`
+</ParamField>
+
+<ParamField query="fields" type="string">
+  Comma-separated list of fields to return. Available fields: `id`, `name`, `created_at`, `category_count`, `month`, `month_assigned`, `month_spent`, `month_rollover`, `month_budget_left`
+</ParamField>
+
+<ParamField query="sort" type="string" default="name">
+  Field to sort by. Options: `name`, `created_at`
+</ParamField>
+
+<ParamField query="order" type="string" default="asc">
+  Sort order. Options: `asc`, `desc`
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Maximum number of results to return (1-1000)
+</ParamField>
+
+<ParamField query="offset" type="integer" default="0">
+  Number of results to skip for pagination
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  Cursor for pagination. Cannot be used with `offset`
+</ParamField>
+
+## Response fields
+
+<ResponseField name="data" type="array">
+  Array of group objects
+
+  <ResponseField name="id" type="string">
+    Unique group identifier (UUID)
+  </ResponseField>
+
+  <ResponseField name="name" type="string">
+    Group name
+  </ResponseField>
+
+  <ResponseField name="created_at" type="string">
+    Group creation timestamp (ISO 8601)
+  </ResponseField>
+
+  <ResponseField name="category_count" type="integer">
+    Number of categories in this group (only included when `include_category_count=true`)
+  </ResponseField>
+
+  <ResponseField name="month" type="string">
+    Month for budget totals in YYYY-MM format (only included when `include_budget_totals=true`)
+  </ResponseField>
+
+  <ResponseField name="month_assigned" type="number">
+    Total amount assigned to categories in this group for the month (only included when `include_budget_totals=true`)
+  </ResponseField>
+
+  <ResponseField name="month_spent" type="number">
+    Total amount spent across categories in this group for the month (only included when `include_budget_totals=true`)
+  </ResponseField>
+
+  <ResponseField name="month_rollover" type="number">
+    Total rollover amount for categories in this group (only included when `include_budget_totals=true`)
+  </ResponseField>
+
+  <ResponseField name="month_budget_left" type="number">
+    Total budget remaining for this group (assigned + rollover - spent) (only included when `include_budget_totals=true`)
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Pagination and metadata
+
+  <ResponseField name="total" type="integer">
+    Total number of matching groups
+  </ResponseField>
+
+  <ResponseField name="returned" type="integer">
+    Number of groups returned in this response
+  </ResponseField>
+
+  <ResponseField name="limit" type="integer">
+    Maximum results per page
+  </ResponseField>
+
+  <ResponseField name="offset" type="integer">
+    Current offset
+  </ResponseField>
+
+  <ResponseField name="next_cursor" type="string | null">
+    Cursor for the next page, or null if no more results
+  </ResponseField>
+
+  <ResponseField name="sort" type="string">
+    Field used for sorting
+  </ResponseField>
+
+  <ResponseField name="order" type="string">
+    Sort order applied
+  </ResponseField>
+
+  <ResponseField name="include_category_count" type="boolean">
+    Whether category counts were included
+  </ResponseField>
+
+  <ResponseField name="include_budget_totals" type="boolean">
+    Whether budget totals were included
+  </ResponseField>
+
+  <ResponseField name="month" type="string | null">
+    Month used for budget totals
+  </ResponseField>
+</ResponseField>
+
+## Example request
+
+```bash
+curl -X GET "https://api.cashcat.app/api/v1/groups?include_category_count=true&include_budget_totals=true&month=2024-03" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Example response
+
+```json
+{
+  "data": [
+    {
+      "id": "g1h2i3j4-k5l6-7890-ghij-234567890123",
+      "name": "Essential Expenses",
+      "created_at": "2024-01-01T12:00:00Z",
+      "category_count": 5,
+      "month": "2024-03",
+      "month_assigned": 1500.00,
+      "month_spent": 1200.50,
+      "month_rollover": 100.00,
+      "month_budget_left": 399.50
+    },
+    {
+      "id": "h2i3j4k5-l6m7-8901-hijk-345678901234",
+      "name": "Discretionary",
+      "created_at": "2024-01-02T10:00:00Z",
+      "category_count": 3,
+      "month": "2024-03",
+      "month_assigned": 500.00,
+      "month_spent": 450.75,
+      "month_rollover": 50.00,
+      "month_budget_left": 99.25
+    }
+  ],
+  "meta": {
+    "total": 2,
+    "returned": 2,
+    "limit": 100,
+    "offset": 0,
+    "next_cursor": null,
+    "sort": "name",
+    "order": "asc",
+    "include_category_count": true,
+    "include_budget_totals": true,
+    "month": "2024-03"
+  }
+}
+```

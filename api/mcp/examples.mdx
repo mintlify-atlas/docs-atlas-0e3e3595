@@ -1,0 +1,464 @@
+---
+title: MCP examples
+description: Real curl examples for initializing sessions and calling all MCP tools.
+---
+
+These examples demonstrate how to interact with the CashCat MCP endpoint using curl.
+
+## Initialize session
+
+Initialize an MCP session to get server capabilities and protocol version.
+
+```bash
+curl -sS https://<your-domain>/api/mcp \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "initialize",
+    "params": {}
+  }'
+```
+
+**Response:**
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "protocolVersion": "2024-11-05",
+    "capabilities": {
+      "tools": {
+        "listChanged": false
+      }
+    },
+    "serverInfo": {
+      "name": "cashcat-mcp",
+      "version": "1.0.0"
+    },
+    "instructions": "Use cashcat_financial_overview and cashcat_full_context for comprehensive financial analysis."
+  }
+}
+```
+
+## Ping
+
+Health check to verify the MCP endpoint is responding.
+
+```bash
+curl -sS https://<your-domain>/api/mcp \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "ping",
+    "params": {}
+  }'
+```
+
+**Response:**
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "ok": true,
+    "timestamp": "2026-03-03T10:30:00Z"
+  }
+}
+```
+
+## List tools
+
+Get the list of all available MCP tools and their schemas.
+
+```bash
+curl -sS https://<your-domain>/api/mcp \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 3,
+    "method": "tools/list",
+    "params": {}
+  }'
+```
+
+**Response:**
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "result": {
+    "tools": [
+      {
+        "name": "cashcat_get",
+        "description": "Read any CashCat REST GET endpoint (accounts, categories, groups, assignments, transactions, transfers, budget-left).",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["endpoint"],
+          "properties": {
+            "endpoint": {
+              "type": "string",
+              "enum": ["accounts", "assignments", "categories", "categories/budget-left", "groups", "transactions", "transfers"]
+            },
+            "query": {
+              "type": "object",
+              "description": "Query params passed through to the selected endpoint.",
+              "additionalProperties": {
+                "anyOf": [{"type": "string"}, {"type": "number"}, {"type": "boolean"}]
+              }
+            },
+            "paginate_all": {
+              "type": "boolean",
+              "description": "If true, keeps following cursor pagination until max_rows is reached.",
+              "default": false
+            },
+            "max_rows": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 2000
+            }
+          }
+        }
+      },
+      {
+        "name": "cashcat_financial_overview",
+        "description": "Get an advisory-friendly snapshot: net worth, budget health, overspending, and monthly cashflow.",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "month": {
+              "type": "string",
+              "description": "Optional month in YYYY-MM."
+            },
+            "as_of_date": {
+              "type": "string",
+              "description": "Optional as-of date in YYYY-MM-DD."
+            },
+            "max_rows_for_summaries": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 10000,
+              "default": 4000
+            },
+            "recent_items_limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 25
+            }
+          }
+        }
+      },
+      {
+        "name": "cashcat_full_context",
+        "description": "Fetch a broad, structured financial context bundle across all major endpoints for deep analysis/advice.",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "month": {
+              "type": "string",
+              "description": "Optional month in YYYY-MM."
+            },
+            "start_date": {
+              "type": "string",
+              "description": "Optional start date in YYYY-MM-DD for transaction/transfer windows."
+            },
+            "end_date": {
+              "type": "string",
+              "description": "Optional end date in YYYY-MM-DD for transaction/transfer windows."
+            },
+            "as_of_date": {
+              "type": "string",
+              "description": "Optional balance as-of date in YYYY-MM-DD."
+            },
+            "include_accounts": {"type": "boolean", "default": true},
+            "include_categories": {"type": "boolean", "default": true},
+            "include_groups": {"type": "boolean", "default": true},
+            "include_assignments": {"type": "boolean", "default": true},
+            "include_transactions": {"type": "boolean", "default": true},
+            "include_transfers": {"type": "boolean", "default": true},
+            "include_budget_left": {"type": "boolean", "default": true},
+            "max_rows_per_endpoint": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 10000,
+              "default": 4000
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+```
+
+## Call cashcat_get
+
+Query a specific endpoint with optional pagination.
+
+<CodeGroup>
+
+```bash Simple query
+curl -sS https://<your-domain>/api/mcp \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer cc_live_..." \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 4,
+    "method": "tools/call",
+    "params": {
+      "name": "cashcat_get",
+      "arguments": {
+        "endpoint": "accounts"
+      }
+    }
+  }'
+```
+
+```bash With query parameters
+curl -sS https://<your-domain>/api/mcp \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer cc_live_..." \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 5,
+    "method": "tools/call",
+    "params": {
+      "name": "cashcat_get",
+      "arguments": {
+        "endpoint": "transactions",
+        "query": {
+          "month": "2026-02",
+          "sort": "date",
+          "order": "desc"
+        }
+      }
+    }
+  }'
+```
+
+```bash Auto-pagination
+curl -sS https://<your-domain>/api/mcp \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer cc_live_..." \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 6,
+    "method": "tools/call",
+    "params": {
+      "name": "cashcat_get",
+      "arguments": {
+        "endpoint": "transactions",
+        "query": {
+          "month": "2026-02"
+        },
+        "paginate_all": true,
+        "max_rows": 5000
+      }
+    }
+  }'
+```
+
+</CodeGroup>
+
+## Call cashcat_financial_overview
+
+Get a comprehensive financial summary for a specific month.
+
+<CodeGroup>
+
+```bash Current month
+curl -sS https://<your-domain>/api/mcp \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer cc_live_..." \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 7,
+    "method": "tools/call",
+    "params": {
+      "name": "cashcat_financial_overview",
+      "arguments": {}
+    }
+  }'
+```
+
+```bash Specific month
+curl -sS https://<your-domain>/api/mcp \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer cc_live_..." \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 8,
+    "method": "tools/call",
+    "params": {
+      "name": "cashcat_financial_overview",
+      "arguments": {
+        "month": "2026-02",
+        "recent_items_limit": 20
+      }
+    }
+  }'
+```
+
+```bash With as-of date
+curl -sS https://<your-domain>/api/mcp \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer cc_live_..." \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 9,
+    "method": "tools/call",
+    "params": {
+      "name": "cashcat_financial_overview",
+      "arguments": {
+        "month": "2026-02",
+        "as_of_date": "2026-02-15",
+        "recent_items_limit": 50
+      }
+    }
+  }'
+```
+
+</CodeGroup>
+
+## Call cashcat_full_context
+
+Fetch comprehensive context across all major endpoints.
+
+<CodeGroup>
+
+```bash Current month
+curl -sS https://<your-domain>/api/mcp \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer cc_live_..." \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 10,
+    "method": "tools/call",
+    "params": {
+      "name": "cashcat_full_context",
+      "arguments": {}
+    }
+  }'
+```
+
+```bash Specific month
+curl -sS https://<your-domain>/api/mcp \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer cc_live_..." \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 11,
+    "method": "tools/call",
+    "params": {
+      "name": "cashcat_full_context",
+      "arguments": {
+        "month": "2026-02",
+        "max_rows_per_endpoint": 3000
+      }
+    }
+  }'
+```
+
+```bash Date range
+curl -sS https://<your-domain>/api/mcp \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer cc_live_..." \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 12,
+    "method": "tools/call",
+    "params": {
+      "name": "cashcat_full_context",
+      "arguments": {
+        "start_date": "2026-01-01",
+        "end_date": "2026-02-28",
+        "max_rows_per_endpoint": 5000
+      }
+    }
+  }'
+```
+
+```bash Selective datasets
+curl -sS https://<your-domain>/api/mcp \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer cc_live_..." \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 13,
+    "method": "tools/call",
+    "params": {
+      "name": "cashcat_full_context",
+      "arguments": {
+        "month": "2026-02",
+        "include_accounts": true,
+        "include_categories": true,
+        "include_groups": true,
+        "include_assignments": false,
+        "include_transactions": true,
+        "include_transfers": false,
+        "include_budget_left": true
+      }
+    }
+  }'
+```
+
+</CodeGroup>
+
+## Response format
+
+All tool responses follow this JSON-RPC 2.0 format:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{...JSON formatted result...}"
+      }
+    ],
+    "structuredContent": {
+      // Actual tool response data
+    }
+  }
+}
+```
+
+The `structuredContent` field contains the actual tool response, while `content` provides a text representation for display.
+
+## Error handling
+
+Errors are returned in JSON-RPC 2.0 error format:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "error": {
+    "code": -32001,
+    "message": "Unauthorized",
+    "data": {
+      "reason": "Invalid API key"
+    }
+  }
+}
+```
+
+Common error codes:
+- `-32700` - Parse error (invalid JSON)
+- `-32600` - Invalid request (malformed JSON-RPC)
+- `-32601` - Method not found
+- `-32602` - Invalid params
+- `-32000` - Tool execution failed
+- `-32001` - Unauthorized (invalid or missing API key)

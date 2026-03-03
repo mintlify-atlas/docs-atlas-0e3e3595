@@ -1,0 +1,130 @@
+---
+title: Budget management
+description: Manage your budget with zero-based budgeting, category goals, and automatic rollover
+---
+
+CashCat uses **zero-based budgeting**, a proven method that helps you be intentional with every single purchase. Instead of wondering where your money went, you assign every penny a purpose before you spend it.
+
+## Core philosophy
+
+CashCat is built around these core principles:
+
+- **Every penny has a purpose** — assign all income into categories with clear intention
+- **Money you don't spend rolls forward** — seamlessly carry unspent amounts into future months
+- **Stay flexible** — edit past transactions and have your entire budget auto-cascade
+- **Full control** — no ads, no tracking, no monthly fee
+
+## Groups and categories
+
+Your budget is organized into groups and categories:
+
+- **Groups** are like envelopes (e.g., Food, Needs, Wants, Savings)
+- **Categories** are specific jobs inside each envelope (e.g., Groceries, Dining, Housing, Bills)
+
+This two-level structure helps you organize spending logically and see patterns at both the detailed and high-level view.
+
+<CardGroup cols={2}>
+  <Card title="Food" icon="utensils">
+    Groceries, Dining, Lunch & Drinks
+  </Card>
+  <Card title="Needs" icon="house">
+    Housing, Bills, Transport, Health & Care
+  </Card>
+  <Card title="Wants" icon="sparkles">
+    Shopping, Entertainment, Subscriptions
+  </Card>
+  <Card title="Savings" icon="piggy-bank">
+    Emergency, Travel, Investments
+  </Card>
+</CardGroup>
+
+## Budget templates
+
+CashCat includes pre-built templates to help you get started quickly:
+
+- **Student** — optimized for student life with focus on food and essentials (25% food, 40% needs, 20% wants, 15% savings)
+- **Professional** — balanced for working professionals with business expenses (15% food, 40% needs, 10% business, 15% wants, 20% savings)
+- **Family** — designed for household budgets with family-specific categories (20% food, 45% needs, 15% wants, 20% savings)
+- **Debt Crusher** — aggressive debt payoff focus (20% food, 45% needs, 5% wants, 30% savings/debt)
+- **Freelancer** — includes tax savings and business expenses (25% business, 15% food, 35% needs, 10% wants, 15% savings)
+
+Each template automatically distributes your monthly income across categories based on proven budget ratios. You can customize everything after selecting a template.
+
+## Assigning money to categories
+
+When you receive income, you assign it to categories. CashCat tracks:
+
+- **Assigned** — money you've allocated to each category this month
+- **Spent** — actual spending from transactions
+- **Remaining** — what's left to spend (including rollover from previous months)
+
+<Note>
+The transaction modal shows category remaining balance in real-time as you enter expenses, helping you stay on track.
+</Note>
+
+## Goal types
+
+Each category can have one of three goal types:
+
+### Spending
+
+Fill to goal and spend throughout the month. Perfect for recurring expenses like groceries, rent, and bills. Unspent money automatically rolls over to next month.
+
+### Emergency fund
+
+Save to a target and keep it there. Ideal for building your emergency fund — money stays in the category once you reach your goal.
+
+### Savings
+
+Save a fixed amount each month. Great for travel funds, investments, or other savings goals where you want to contribute consistently.
+
+<Info>
+The Savings category in templates is a catch-all for leftover money — it's not a monthly spending goal, it's where the rest of your income lives. That's zero-based budgeting.
+</Info>
+
+## Auto-distribution
+
+CashCat can automatically distribute your monthly income across categories:
+
+1. Enter your estimated monthly income or expenses
+2. Click **Autofill** to distribute based on template ratios
+3. Adjust individual category goals as needed
+4. Lock income to prevent accidental changes
+
+This feature uses your chosen template's ratios to calculate appropriate amounts for each category.
+
+## Historical insights
+
+When you import bank transactions, CashCat calculates:
+
+- **Average monthly income** — based on income transactions over time
+- **Average monthly spend** — based on payment transactions over time
+- **Category-specific averages** — real spending patterns for each category (last 3 months)
+
+These insights appear in the budget management modal to help you set realistic goals based on actual spending behavior.
+
+## Rollover calculation
+
+Unspent budget automatically rolls forward month-to-month. CashCat calculates rollover by:
+
+1. Looking back up to 12 months for each category
+2. For each past month: `rollover = assigned - spent`
+3. Accumulating the difference forward to the current month
+
+Your current month's available balance is: `assigned + rollover - spent`
+
+<Warning>
+Editing past transactions will auto-cascade through your budget, recalculating rollover amounts for all subsequent months.
+</Warning>
+
+## Managing your budget
+
+Access budget management from the main navigation:
+
+- **Add groups** — create new organizational buckets
+- **Add categories** — create spending categories within groups
+- **Set goals** — define monthly targets with goal types
+- **Edit categories** — rename, change goals, or update goal types
+- **Delete categories** — remove unused categories (with confirmation)
+
+All changes sync immediately across devices when online.

@@ -1,0 +1,280 @@
+---
+title: Get transactions
+description: Retrieve transactions with filtering, sorting, and optional related data
+---
+
+## Endpoint
+
+```
+GET /api/v1/transactions
+```
+
+Retrieve all transactions for the authenticated user with support for filtering by date, account, category, vendor, and more.
+
+## Query parameters
+
+<ParamField query="month" type="string">
+  Filter transactions by month in YYYY-MM format. Cannot be used with `start_date` or `end_date`
+</ParamField>
+
+<ParamField query="start_date" type="string">
+  Filter transactions on or after this date (YYYY-MM-DD). Cannot be used with `month`
+</ParamField>
+
+<ParamField query="end_date" type="string">
+  Filter transactions on or before this date (YYYY-MM-DD). Cannot be used with `month`
+</ParamField>
+
+<ParamField query="category_id" type="string">
+  Filter transactions by category UUID
+</ParamField>
+
+<ParamField query="account_id" type="string">
+  Filter transactions by account UUID
+</ParamField>
+
+<ParamField query="vendor_id" type="string">
+  Filter transactions by vendor UUID
+</ParamField>
+
+<ParamField query="type" type="string">
+  Filter by transaction type. Options: `income`, `payment`, `starting`
+</ParamField>
+
+<ParamField query="description_contains" type="string">
+  Filter transactions where description contains this text (case-insensitive)
+</ParamField>
+
+<ParamField query="vendor" type="string">
+  Filter transactions where vendor name contains this text (case-insensitive)
+</ParamField>
+
+<ParamField query="amount_min" type="number">
+  Filter transactions with amount greater than or equal to this value
+</ParamField>
+
+<ParamField query="amount_max" type="number">
+  Filter transactions with amount less than or equal to this value
+</ParamField>
+
+<ParamField query="include" type="string">
+  Comma-separated list of related data to include. Options: `account`, `category`, `vendor`
+</ParamField>
+
+<ParamField query="fields" type="string">
+  Comma-separated list of fields to return. Available fields: `id`, `account_id`, `amount`, `category_id`, `created_at`, `date`, `description`, `type`, `user_id`, `vendor`, `vendor_id`
+</ParamField>
+
+<ParamField query="sort" type="string" default="date">
+  Field to sort by. Options: `date`, `created_at`, `amount`, `vendor`, `type`
+</ParamField>
+
+<ParamField query="order" type="string" default="desc">
+  Sort order. Options: `asc`, `desc`
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Maximum number of results to return (1-1000)
+</ParamField>
+
+<ParamField query="offset" type="integer" default="0">
+  Number of results to skip for pagination
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  Cursor for pagination. Cannot be used with `offset`
+</ParamField>
+
+## Response fields
+
+<ResponseField name="data" type="array">
+  Array of transaction objects
+
+  <ResponseField name="id" type="string">
+    Unique transaction identifier (UUID)
+  </ResponseField>
+
+  <ResponseField name="account_id" type="string">
+    Account UUID this transaction belongs to
+  </ResponseField>
+
+  <ResponseField name="amount" type="number">
+    Transaction amount
+  </ResponseField>
+
+  <ResponseField name="category_id" type="string | null">
+    Category UUID for this transaction
+  </ResponseField>
+
+  <ResponseField name="created_at" type="string">
+    Transaction creation timestamp (ISO 8601)
+  </ResponseField>
+
+  <ResponseField name="date" type="string">
+    Transaction date (YYYY-MM-DD)
+  </ResponseField>
+
+  <ResponseField name="description" type="string | null">
+    Transaction description
+  </ResponseField>
+
+  <ResponseField name="type" type="string">
+    Transaction type: `income`, `payment`, or `starting`
+  </ResponseField>
+
+  <ResponseField name="user_id" type="string">
+    User UUID who owns this transaction
+  </ResponseField>
+
+  <ResponseField name="vendor" type="string">
+    Vendor name
+  </ResponseField>
+
+  <ResponseField name="vendor_id" type="string | null">
+    Vendor UUID
+  </ResponseField>
+
+  <ResponseField name="account" type="object">
+    Account details (only included when `include=account`)
+
+    <ResponseField name="id" type="string">
+      Account UUID
+    </ResponseField>
+
+    <ResponseField name="name" type="string">
+      Account name
+    </ResponseField>
+
+    <ResponseField name="type" type="string">
+      Account type
+    </ResponseField>
+  </ResponseField>
+
+  <ResponseField name="category" type="object">
+    Category details (only included when `include=category`)
+
+    <ResponseField name="id" type="string">
+      Category UUID
+    </ResponseField>
+
+    <ResponseField name="name" type="string">
+      Category name
+    </ResponseField>
+
+    <ResponseField name="group" type="string">
+      Group UUID
+    </ResponseField>
+  </ResponseField>
+
+  <ResponseField name="vendor_details" type="object">
+    Vendor details (only included when `include=vendor`)
+
+    <ResponseField name="id" type="string">
+      Vendor UUID
+    </ResponseField>
+
+    <ResponseField name="name" type="string">
+      Vendor name
+    </ResponseField>
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Pagination and metadata
+
+  <ResponseField name="total" type="integer">
+    Total number of matching transactions
+  </ResponseField>
+
+  <ResponseField name="returned" type="integer">
+    Number of transactions returned in this response
+  </ResponseField>
+
+  <ResponseField name="limit" type="integer">
+    Maximum results per page
+  </ResponseField>
+
+  <ResponseField name="offset" type="integer">
+    Current offset
+  </ResponseField>
+
+  <ResponseField name="next_cursor" type="string | null">
+    Cursor for the next page, or null if no more results
+  </ResponseField>
+
+  <ResponseField name="sort" type="string">
+    Field used for sorting
+  </ResponseField>
+
+  <ResponseField name="order" type="string">
+    Sort order applied
+  </ResponseField>
+
+  <ResponseField name="includes" type="array">
+    List of included related data
+  </ResponseField>
+
+  <ResponseField name="month" type="string | null">
+    Month filter applied
+  </ResponseField>
+
+  <ResponseField name="start_date" type="string | null">
+    Start date filter applied
+  </ResponseField>
+
+  <ResponseField name="end_date" type="string | null">
+    End date filter applied
+  </ResponseField>
+</ResponseField>
+
+## Example request
+
+```bash
+curl -X GET "https://api.cashcat.app/api/v1/transactions?month=2024-03&type=payment&include=account,category&sort=date&order=desc" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Example response
+
+```json
+{
+  "data": [
+    {
+      "id": "t1u2v3w4-x5y6-7890-tuvw-345678901234",
+      "account_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "amount": -45.67,
+      "category_id": "c1d2e3f4-a5b6-7890-cdef-123456789012",
+      "created_at": "2024-03-15T14:30:00Z",
+      "date": "2024-03-15",
+      "description": "Weekly grocery shopping",
+      "type": "payment",
+      "user_id": "u1v2w3x4-y5z6-7890-uvwx-456789012345",
+      "vendor": "Whole Foods",
+      "vendor_id": "v1w2x3y4-z5a6-7890-vwxy-567890123456",
+      "account": {
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "name": "Main Checking",
+        "type": "checking"
+      },
+      "category": {
+        "id": "c1d2e3f4-a5b6-7890-cdef-123456789012",
+        "name": "Groceries",
+        "group": "g1h2i3j4-k5l6-7890-ghij-234567890123"
+      }
+    }
+  ],
+  "meta": {
+    "total": 1,
+    "returned": 1,
+    "limit": 100,
+    "offset": 0,
+    "next_cursor": null,
+    "sort": "date",
+    "order": "desc",
+    "includes": ["account", "category"],
+    "month": "2024-03",
+    "start_date": "2024-03-01",
+    "end_date": "2024-03-31"
+  }
+}
+```

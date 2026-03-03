@@ -1,0 +1,178 @@
+---
+title: Budget rollover
+description: How unspent budget automatically rolls forward to future months in CashCat
+---
+
+Rollover is one of CashCat's most powerful features. Instead of losing unspent budget at month's end, money automatically carries forward, letting you build up categories over time.
+
+## How rollover works
+
+At the end of each month, CashCat calculates how much you didn't spend from each category:
+
+```
+Rollover = (Previous rollover + Money assigned) - Money spent
+```
+
+This amount automatically becomes available in the next month, added to whatever new money you assign.
+
+### Example
+
+Let's say you have a "Car Maintenance" category:
+
+**January:**
+- Assigned: $100
+- Spent: $0
+- Rollover to February: $100
+
+**February:**
+- Starting rollover: $100
+- Assigned: $100  
+- Spent: $50
+- Rollover to March: $150
+
+**March:**
+- Starting rollover: $150
+- Assigned: $100
+- Spent: $400 (new tires!)
+- Rollover to April: -$150
+
+The negative rollover in March means you overspent and need to catch up in April.
+
+<Info>
+Rollover calculations happen automatically. You never need to manually move money between months.
+</Info>
+
+## Categories with rollover enabled
+
+Not every category needs rollover. The `rollover_enabled` flag lets you control this per-category.
+
+**Good candidates for rollover:**
+- Irregular expenses (car repairs, medical, gifts)
+- Sinking funds (annual insurance, property tax)
+- Savings goals (vacation, new computer)
+- Emergency funds
+
+**Categories that might not need rollover:**
+- Fixed monthly bills (rent, subscription services)
+- Groceries and regular spending
+- Any category where you want a fresh start each month
+
+<Tip>
+Consider enabling rollover for categories where expenses are unpredictable or occur less than monthly.
+</Tip>
+
+## Viewing rollover amounts
+
+When you query groups or categories for a specific month, the API calculates rollover from all previous months:
+
+```
+GET /api/v1/groups?include_budget_totals=true&month=2024-03
+```
+
+The response includes:
+
+- `month_assigned` — New money assigned this month
+- `month_spent` — Total spending this month
+- `month_rollover` — Amount carried forward from previous months
+- `month_budget_left` — What's left (assigned + rollover - spent)
+
+<Note>
+Rollover calculations go back to the first month where you made any assignments. If you've been using CashCat for years, these calculations include your entire history.
+</Note>
+
+## How rollover is calculated
+
+For each category, CashCat:
+
+1. Finds the earliest month with an assignment
+2. Walks forward month-by-month
+3. For each month, calculates: `rollover = previous_rollover + assigned - spent`
+4. Stops at the target month
+
+This means rollover for a category in December 2024 includes:
+
+- Everything assigned since you started using the category
+- Minus everything spent over that time
+- Minus any months where you didn't assign enough to cover spending
+
+### Performance considerations
+
+Rollover calculations can be intensive for:
+
+- Many categories
+- Long time periods
+- Lots of transactions
+
+CashCat calculates rollover on-demand when you request budget totals. The system is optimized to handle thousands of transactions, but be aware that complex queries may take a moment.
+
+<Info>
+The API fetches assignments and payments in batches to handle large datasets efficiently.
+</Info>
+
+## Negative rollover
+
+If you spend more than you have assigned (including rollover), you get negative rollover. This shows categories where you're behind budget.
+
+**What negative rollover means:**
+
+- You overspent in previous months
+- You need to assign extra to catch up
+- Or adjust your goal if the category consistently runs over
+
+<Tip>
+Negative rollover isn't necessarily bad—it just means you're tracking reality. Maybe your grocery budget was too low. Adjust it going forward.
+</Tip>
+
+## Zero-based budgeting and rollover
+
+Rollover supports zero-based budgeting by letting you:
+
+1. **Budget for irregular expenses** — Assign a little each month, spend when needed
+2. **Build savings gradually** — Watch categories grow over time
+3. **Handle overspending** — See exactly where you're behind and recover
+4. **Stay flexible** — Edit past transactions and rollover updates automatically
+
+You still give every dollar a job when income arrives, but rollover means those dollars can wait in their assigned categories until you need them.
+
+## Rollover and goal types
+
+Different goal types work naturally with rollover:
+
+**Spending categories**  
+Rollover accumulates excess for future spending. If you budget $100 for entertainment but only spend $60, that $40 is available next month.
+
+**Savings categories**  
+Rollover is essential—these categories are meant to grow over time as you work toward a goal.
+
+**Emergency funds**  
+Rollover builds your safety net month by month until you reach your target, then maintains it.
+
+<Note>
+You can disable rollover even for savings goals if you want to enforce a "save this much every month" approach instead of accumulating.
+</Note>
+
+## Starting mid-month or mid-year
+
+When you start using CashCat, rollover calculations begin from your first assignments:
+
+1. Create your categories
+2. Add your first month's assignments
+3. Record transactions as they happen
+4. Next month, rollover appears automatically
+
+You don't need to enter historical data—just start fresh and let rollover build from there.
+
+## Rollover vs transfers
+
+Don't confuse budget rollover with account transfers:
+
+**Rollover** is about budget categories (conceptual money). Unspent budget in the "Groceries" category carries forward.
+
+**Transfers** move actual money between accounts (physical money). Moving money from checking to savings.
+
+They're independent:
+
+- Rollover happens automatically within categories
+- Transfers you create manually to move money between accounts
+- Transfers don't affect category budgets
+- Rollover doesn't move money between accounts

@@ -1,0 +1,306 @@
+---
+title: Get assignments
+description: Retrieve budget assignments with filtering, summaries, and rollover calculations
+---
+
+## Endpoint
+
+```
+GET /api/v1/assignments
+```
+
+Retrieve budget assignments for the authenticated user with support for date filtering, category filtering, summaries, and optional unassigned category inclusion.
+
+## Query parameters
+
+<ParamField query="month" type="string">
+  Filter assignments for a specific month in YYYY-MM format. Cannot be used with `from_month` or `to_month`
+</ParamField>
+
+<ParamField query="from_month" type="string">
+  Filter assignments from this month onwards (YYYY-MM). Cannot be used with `month`
+</ParamField>
+
+<ParamField query="to_month" type="string">
+  Filter assignments up to this month (YYYY-MM). Cannot be used with `month`
+</ParamField>
+
+<ParamField query="category_id" type="string">
+  Filter assignments by category UUID
+</ParamField>
+
+<ParamField query="group_id" type="string">
+  Filter assignments by categories in this group UUID
+</ParamField>
+
+<ParamField query="goal_type" type="string">
+  Filter by category goal type. Options: `spending`, `savings`, `emergency_fund`
+</ParamField>
+
+<ParamField query="include_unassigned" type="boolean" default="false">
+  Include categories with no assignment for the specified month (requires single `month` parameter). Accepts `true`, `false`, `1`, or `0`
+</ParamField>
+
+<ParamField query="summary" type="string">
+  Group results by dimension. Options: `month`, `category`, `group`. Cannot be used with `include_unassigned`
+</ParamField>
+
+<ParamField query="fields" type="string">
+  Comma-separated list of fields to return. Available fields: `id`, `category_id`, `month`, `assigned`, `rollover`, `created_at`
+</ParamField>
+
+<ParamField query="sort" type="string" default="month">
+  Field to sort by. Options: `month`, `assigned`, `created_at`
+</ParamField>
+
+<ParamField query="order" type="string" default="asc">
+  Sort order. Options: `asc`, `desc`
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Maximum number of results to return (1-1000)
+</ParamField>
+
+<ParamField query="offset" type="integer" default="0">
+  Number of results to skip for pagination
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  Cursor for pagination. Cannot be used with `offset`
+</ParamField>
+
+## Response fields
+
+<ResponseField name="data" type="array">
+  Array of assignment objects or summary objects (depending on `summary` parameter)
+
+  <ResponseField name="id" type="string">
+    Unique assignment identifier (UUID)
+  </ResponseField>
+
+  <ResponseField name="category_id" type="string">
+    Category UUID this assignment belongs to
+  </ResponseField>
+
+  <ResponseField name="month" type="string">
+    Assignment month in YYYY-MM format
+  </ResponseField>
+
+  <ResponseField name="assigned" type="number">
+    Amount assigned to this category for the month
+  </ResponseField>
+
+  <ResponseField name="rollover" type="number">
+    Rollover amount from previous months
+  </ResponseField>
+
+  <ResponseField name="created_at" type="string">
+    Assignment creation timestamp (ISO 8601)
+  </ResponseField>
+
+  <ResponseField name="is_assigned" type="boolean">
+    Whether this category has an assignment (only included when `include_unassigned=true`)
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="data (when summary=month)" type="array">
+  Array of monthly summary objects
+
+  <ResponseField name="month" type="string">
+    Month in YYYY-MM format
+  </ResponseField>
+
+  <ResponseField name="total_assigned" type="number">
+    Total amount assigned across all categories for this month
+  </ResponseField>
+
+  <ResponseField name="total_rollover" type="number">
+    Total rollover amount across all categories for this month
+  </ResponseField>
+
+  <ResponseField name="row_count" type="integer">
+    Number of assignments in this month
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="data (when summary=category)" type="array">
+  Array of category summary objects
+
+  <ResponseField name="category_id" type="string">
+    Category UUID
+  </ResponseField>
+
+  <ResponseField name="total_assigned" type="number">
+    Total amount assigned to this category across all months
+  </ResponseField>
+
+  <ResponseField name="total_rollover" type="number">
+    Total rollover amount for this category
+  </ResponseField>
+
+  <ResponseField name="row_count" type="integer">
+    Number of assignments for this category
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="data (when summary=group)" type="array">
+  Array of group summary objects
+
+  <ResponseField name="group_id" type="string">
+    Group UUID
+  </ResponseField>
+
+  <ResponseField name="total_assigned" type="number">
+    Total amount assigned to categories in this group
+  </ResponseField>
+
+  <ResponseField name="total_rollover" type="number">
+    Total rollover amount for categories in this group
+  </ResponseField>
+
+  <ResponseField name="row_count" type="integer">
+    Number of assignments in this group
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Pagination and metadata
+
+  <ResponseField name="total" type="integer">
+    Total number of matching assignments or summary rows
+  </ResponseField>
+
+  <ResponseField name="returned" type="integer">
+    Number of items returned in this response
+  </ResponseField>
+
+  <ResponseField name="limit" type="integer">
+    Maximum results per page
+  </ResponseField>
+
+  <ResponseField name="offset" type="integer">
+    Current offset
+  </ResponseField>
+
+  <ResponseField name="next_cursor" type="string | null">
+    Cursor for the next page, or null if no more results
+  </ResponseField>
+
+  <ResponseField name="month" type="string | null">
+    Month filter applied
+  </ResponseField>
+
+  <ResponseField name="from_month" type="string | null">
+    From month filter applied
+  </ResponseField>
+
+  <ResponseField name="to_month" type="string | null">
+    To month filter applied
+  </ResponseField>
+
+  <ResponseField name="include_unassigned" type="boolean">
+    Whether unassigned categories were included
+  </ResponseField>
+
+  <ResponseField name="summary" type="string | null">
+    Summary dimension used (month, category, or group)
+  </ResponseField>
+
+  <ResponseField name="sort" type="string">
+    Field used for sorting
+  </ResponseField>
+
+  <ResponseField name="order" type="string">
+    Sort order applied
+  </ResponseField>
+</ResponseField>
+
+## Example request
+
+```bash
+curl -X GET "https://api.cashcat.app/api/v1/assignments?month=2024-03&group_id=g1h2i3j4-k5l6-7890-ghij-234567890123" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Example response
+
+```json
+{
+  "data": [
+    {
+      "id": "as1g2n3m-e4n5-6789-asgn-567890123456",
+      "category_id": "c1d2e3f4-a5b6-7890-cdef-123456789012",
+      "month": "2024-03",
+      "assigned": 600.00,
+      "rollover": 25.50,
+      "created_at": "2024-03-01T08:00:00Z"
+    },
+    {
+      "id": "as2h3n4m-e5n6-7890-asgn-678901234567",
+      "category_id": "d2e3f4a5-b6c7-8901-defg-234567890123",
+      "month": "2024-03",
+      "assigned": 200.00,
+      "rollover": 0.00,
+      "created_at": "2024-03-01T08:00:00Z"
+    }
+  ],
+  "meta": {
+    "total": 2,
+    "returned": 2,
+    "limit": 100,
+    "offset": 0,
+    "next_cursor": null,
+    "month": "2024-03",
+    "from_month": null,
+    "to_month": null,
+    "include_unassigned": false,
+    "sort": "month",
+    "order": "asc"
+  }
+}
+```
+
+## Example summary request
+
+```bash
+curl -X GET "https://api.cashcat.app/api/v1/assignments?from_month=2024-01&to_month=2024-03&summary=month" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Example summary response
+
+```json
+{
+  "data": [
+    {
+      "month": "2024-01",
+      "total_assigned": 2500.00,
+      "total_rollover": 150.00,
+      "row_count": 12
+    },
+    {
+      "month": "2024-02",
+      "total_assigned": 2500.00,
+      "total_rollover": 175.50,
+      "row_count": 12
+    },
+    {
+      "month": "2024-03",
+      "total_assigned": 2600.00,
+      "total_rollover": 200.00,
+      "row_count": 12
+    }
+  ],
+  "meta": {
+    "total": 3,
+    "returned": 3,
+    "limit": 100,
+    "offset": 0,
+    "next_cursor": null,
+    "month": null,
+    "from_month": "2024-01",
+    "to_month": "2024-03",
+    "summary": "month"
+  }
+}
+```
