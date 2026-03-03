@@ -1,9 +1,9 @@
 ---
-title: Get transfers
-description: Retrieve account-to-account transfers with filtering and sorting
+title: Transfers
+description: Create, update, delete, and retrieve account-to-account transfers
 ---
 
-## Endpoint
+## Get transfers
 
 ```
 GET /api/v1/transfers
@@ -243,3 +243,199 @@ curl -X GET "https://api.cashcat.app/api/v1/transfers?month=2024-03&include_acco
   }
 }
 ```
+
+---
+
+## Create transfer
+
+```
+POST /api/v1/transfers
+```
+
+Create a new transfer between two accounts. Both accounts must belong to the authenticated user.
+
+### Headers
+
+<ParamField header="Idempotency-Key" type="string">
+  Optional idempotency key (max 200 characters) to prevent duplicate transfers
+</ParamField>
+
+### Query parameters
+
+<ParamField query="dry_run" type="boolean" default="false">
+  If `true`, validates the transfer without creating it
+</ParamField>
+
+### Request body
+
+<ParamField body="from_account_id" type="string" required>
+  Source account UUID
+</ParamField>
+
+<ParamField body="to_account_id" type="string" required>
+  Destination account UUID (must be different from source)
+</ParamField>
+
+<ParamField body="amount" type="number" required>
+  Transfer amount (must be positive)
+</ParamField>
+
+<ParamField body="date" type="string" required>
+  Transfer date in YYYY-MM-DD format
+</ParamField>
+
+<ParamField body="description" type="string">
+  Optional transfer description
+</ParamField>
+
+### Example request
+
+```bash
+curl -X POST "https://api.cashcat.app/api/v1/transfers" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from_account_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "to_account_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+    "amount": 500.00,
+    "date": "2024-03-15",
+    "description": "Monthly savings transfer"
+  }'
+```
+
+### Example response
+
+```json
+{
+  "data": {
+    "id": "tr1s2t3u-v4w5-6789-trst-456789012345",
+    "user_id": "u1v2w3x4-y5z6-7890-uvwx-456789012345",
+    "from_account_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "to_account_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+    "amount": 500.00,
+    "date": "2024-03-15",
+    "description": "Monthly savings transfer",
+    "created_at": "2024-03-15T10:00:00Z"
+  },
+  "meta": {
+    "created": true
+  }
+}
+```
+
+---
+
+## Update transfer
+
+```
+PUT /api/v1/transfers
+```
+
+Update an existing transfer. All fields except `id` are optional.
+
+### Query parameters
+
+<ParamField query="dry_run" type="boolean" default="false">
+  If `true`, validates the update without applying it
+</ParamField>
+
+### Request body
+
+<ParamField body="id" type="string" required>
+  Transfer UUID to update
+</ParamField>
+
+<ParamField body="from_account_id" type="string">
+  New source account UUID
+</ParamField>
+
+<ParamField body="to_account_id" type="string">
+  New destination account UUID
+</ParamField>
+
+<ParamField body="amount" type="number">
+  New transfer amount (must be positive)
+</ParamField>
+
+<ParamField body="date" type="string">
+  New transfer date in YYYY-MM-DD format
+</ParamField>
+
+<ParamField body="description" type="string">
+  New transfer description
+</ParamField>
+
+### Example request
+
+```bash
+curl -X PUT "https://api.cashcat.app/api/v1/transfers" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "tr1s2t3u-v4w5-6789-trst-456789012345",
+    "amount": 600.00,
+    "description": "Updated savings transfer amount"
+  }'
+```
+
+### Example response
+
+```json
+{
+  "data": {
+    "id": "tr1s2t3u-v4w5-6789-trst-456789012345",
+    "user_id": "u1v2w3x4-y5z6-7890-uvwx-456789012345",
+    "from_account_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "to_account_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+    "amount": 600.00,
+    "date": "2024-03-15",
+    "description": "Updated savings transfer amount",
+    "created_at": "2024-03-15T10:00:00Z"
+  },
+  "meta": {
+    "updated": true
+  }
+}
+```
+
+---
+
+## Delete transfer
+
+```
+DELETE /api/v1/transfers
+```
+
+Delete an existing transfer.
+
+### Query parameters
+
+<ParamField query="id" type="string" required>
+  Transfer UUID to delete
+</ParamField>
+
+<ParamField query="dry_run" type="boolean" default="false">
+  If `true`, validates the deletion without executing it
+</ParamField>
+
+### Example request
+
+```bash
+curl -X DELETE "https://api.cashcat.app/api/v1/transfers?id=tr1s2t3u-v4w5-6789-trst-456789012345" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Example response
+
+```json
+{
+  "data": {
+    "success": true,
+    "id": "tr1s2t3u-v4w5-6789-trst-456789012345"
+  }
+}
+```
+
+<Note>
+  Transfers move money between accounts without affecting budgets. They update account balances but don't create budget entries.
+</Note>

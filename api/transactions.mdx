@@ -1,9 +1,9 @@
 ---
-title: Get transactions
-description: Retrieve transactions with filtering, sorting, and optional related data
+title: Transactions
+description: Create and retrieve transactions with filtering, sorting, and optional related data
 ---
 
-## Endpoint
+## Get transactions
 
 ```
 GET /api/v1/transactions
@@ -278,3 +278,126 @@ curl -X GET "https://api.cashcat.app/api/v1/transactions?month=2024-03&type=paym
   }
 }
 ```
+
+---
+
+## Create transaction
+
+```
+POST /api/v1/transactions
+```
+
+Create a new transaction for the authenticated user. Transactions automatically update account balances and category budgets.
+
+### Headers
+
+<ParamField header="Idempotency-Key" type="string">
+  Optional idempotency key (max 200 characters) to prevent duplicate transactions. If provided, the same key will return the existing transaction instead of creating a duplicate.
+</ParamField>
+
+### Query parameters
+
+<ParamField query="dry_run" type="boolean" default="false">
+  If `true`, validates the transaction without creating it. Returns validation result.
+</ParamField>
+
+### Request body
+
+<ParamField body="amount" type="number" required>
+  Transaction amount. Negative for expenses/payments, positive for income
+</ParamField>
+
+<ParamField body="date" type="string" required>
+  Transaction date in YYYY-MM-DD format
+</ParamField>
+
+<ParamField body="type" type="string" default="payment">
+  Transaction type: `payment`, `income`, or `starting`
+</ParamField>
+
+<ParamField body="category_id" type="string">
+  Category UUID. Required when `type=payment`
+</ParamField>
+
+<ParamField body="account_id" type="string">
+  Account UUID. If omitted, uses the default account
+</ParamField>
+
+<ParamField body="description" type="string">
+  Optional transaction description
+</ParamField>
+
+<ParamField body="vendor" type="string">
+  Optional vendor name
+</ParamField>
+
+<ParamField body="vendor_id" type="string">
+  Optional vendor UUID
+</ParamField>
+
+### Response
+
+Returns the created transaction object with metadata.
+
+<ResponseField name="data" type="object">
+  The created transaction object with all fields populated
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  <ResponseField name="created" type="boolean">
+    Always `true` for new creations
+  </ResponseField>
+
+  <ResponseField name="idempotent_replay" type="boolean">
+    `true` if an existing transaction was returned due to idempotency key match
+  </ResponseField>
+
+  <ResponseField name="dry_run" type="boolean">
+    `true` if this was a validation-only request
+  </ResponseField>
+</ResponseField>
+
+### Example request
+
+```bash
+curl -X POST "https://api.cashcat.app/api/v1/transactions" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: purchase-2024-03-15-001" \
+  -d '{
+    "amount": -45.67,
+    "date": "2024-03-15",
+    "type": "payment",
+    "category_id": "c1d2e3f4-a5b6-7890-cdef-123456789012",
+    "account_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "description": "Weekly grocery shopping",
+    "vendor": "Whole Foods"
+  }'
+```
+
+### Example response
+
+```json
+{
+  "data": {
+    "id": "t1u2v3w4-x5y6-7890-tuvw-345678901234",
+    "user_id": "u1v2w3x4-y5z6-7890-uvwx-456789012345",
+    "account_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "amount": -45.67,
+    "date": "2024-03-15",
+    "type": "payment",
+    "category_id": "c1d2e3f4-a5b6-7890-cdef-123456789012",
+    "description": "Weekly grocery shopping",
+    "vendor": "Whole Foods",
+    "vendor_id": null,
+    "created_at": "2024-03-15T14:30:00Z"
+  },
+  "meta": {
+    "created": true
+  }
+}
+```
+
+<Note>
+  Transactions automatically affect account balances and budget calculations. For `payment` type transactions, the amount is deducted from the specified category's budget.
+</Note>
